@@ -267,14 +267,32 @@
     .wc-note { font-size: .62rem; color: var(--text-muted); }
 
     /* ── Modals ── */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal { background: var(--surface); border-radius: 14px; width: 100%; max-width: 540px; box-shadow: var(--shadow-lg); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column; border: 1px solid var(--border); }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 16px;
+      overscroll-behavior: contain;   /* 背景bodyのスクロール連鎖を遮断 */
+    }
+    .modal {
+      background: var(--surface); border-radius: 14px; width: 100%; max-width: 540px;
+      box-shadow: var(--shadow-lg); overflow: hidden;
+      display: flex; flex-direction: column; border: 1px solid var(--border);
+      /* dvh = ブラウザツールバーを除いた実際の表示高さで計算（iOS Safari対応） */
+      max-height: 88vh;          /* dvh非対応の古いブラウザ向けフォールバック */
+      max-height: 88dvh;         /* iOS Safari 15.4+ / Chrome 108+ */
+    }
     .modal-sm { max-width: 360px; }
     .modal-header { background: linear-gradient(135deg, #1a0a10, #2a0d17); color: var(--text); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid var(--pink-dim); }
     .modal-header h2 { font-size: 1rem; font-weight: 700; }
     .modal-close { background: none; border: none; color: var(--text); font-size: 1.2rem; cursor: pointer; opacity: .8; line-height: 1; }
     .modal-close:hover { opacity: 1; color: var(--pink); }
-    .modal-body { padding: 20px; overflow-y: auto; }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;  /* iOS慣性スクロール有効化 */
+      flex: 1 1 auto;   /* 残り高さをすべて使い切る */
+      min-height: 0;    /* flexアイテムのoverflow:autoが効かないバグ回避 */
+    }
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: .8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 4px; }
     .form-control {
@@ -285,7 +303,13 @@
     .form-control:focus { border-color: var(--pink); }
     select.form-control { cursor: pointer; }
     textarea.form-control { resize: vertical; min-height: 70px; }
-    .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; border-top: 1px solid var(--border); }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      flex-shrink: 0; border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      /* 上：12px、左右：20px、下：ホームインジケーター分 + 最低20px */
+      padding: 12px 20px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+    }
     .btn-cancel { padding: 8px 18px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface2); cursor: pointer; font-size: .88rem; color: var(--text-sub); }
     .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
     .btn-save { padding: 8px 22px; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: .88rem; font-weight: 700; }
@@ -346,8 +370,13 @@
       .translate-body { grid-template-columns: 1fr; }
       .translate-divider { border-left: none; border-right: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 36px; padding: 0; }
       .translate-arrow-icon { transform: rotate(90deg); }
-      .modal { border-radius: 18px 18px 0 0; max-height: 95vh; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; }
-      .modal-overlay { align-items: flex-end; }
+      .modal {
+        border-radius: 18px 18px 0 0;
+        position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
+        max-height: 90vh;    /* フォールバック */
+        max-height: 90dvh;   /* iOS Safariツールバーを除いた実高さで制限 */
+      }
+      .modal-overlay { align-items: flex-end; padding: 0; }
     }
 
     .offline-banner { background: #7b1fa2; color: #fff; text-align: center; font-size: .78rem; padding: 6px 16px; position: sticky; top: 0; z-index: 200; }
@@ -1226,13 +1255,13 @@ Japanese input: "${jaText}"`;
   /* ── App ── */
   function App() {
     const [phrases, setPhrases] = useState(() => {
-      try { const s = localStorage.getItem("baseball-phrases"); return s ? JSON.parse(s) : INITIAL_PHRASES; } catch { return INITIAL_PHRASES; }
+      try { const s = localStorage.getItem("baseball_app_phrases"); return s ? JSON.parse(s) : INITIAL_PHRASES; } catch { return INITIAL_PHRASES; }
     });
     const [categories, setCategories] = useState(() => {
-      try { const s = localStorage.getItem("baseball-categories"); return s ? JSON.parse(s) : DEFAULT_CATEGORIES; } catch { return DEFAULT_CATEGORIES; }
+      try { const s = localStorage.getItem("baseball_app_categories"); return s ? JSON.parse(s) : DEFAULT_CATEGORIES; } catch { return DEFAULT_CATEGORIES; }
     });
-    useEffect(() => { localStorage.setItem("baseball-phrases",    JSON.stringify(phrases));    }, [phrases]);
-    useEffect(() => { localStorage.setItem("baseball-categories", JSON.stringify(categories)); }, [categories]);
+    useEffect(() => { localStorage.setItem("baseball_app_phrases",    JSON.stringify(phrases));    }, [phrases]);
+    useEffect(() => { localStorage.setItem("baseball_app_categories", JSON.stringify(categories)); }, [categories]);
 
     const [syncStatus, setSyncStatus] = useState(db.ready ? "syncing" : "local");
     useEffect(() => {
@@ -1241,7 +1270,7 @@ Japanese input: "${jaText}"`;
         if (!result) { setSyncStatus("error"); return; }
         const { phrases: sbPhrases, customCats } = result;
         if (sbPhrases.length === 0) {
-          const local = (() => { try { return JSON.parse(localStorage.getItem("baseball-phrases")||"[]"); } catch { return []; } })();
+          const local = (() => { try { return JSON.parse(localStorage.getItem("baseball_app_phrases")||"[]"); } catch { return []; } })();
           if (local.length > 0) local.forEach(p => db.upsertPhrase(p));
         } else {
           setPhrases(sbPhrases);
