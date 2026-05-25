@@ -468,7 +468,7 @@
       if (pr.error) console.warn("[Supabase] load phrases:", pr.error.message);
       return {
         phrases:    (pr.data || []).map(this._fromRow),
-        customCats: [], // カテゴリーはlocalStorageのみ管理（医療アプリと共有テーブルを使わない）
+        customCats: [],
       };
     },
     async upsertPhrase(p) {
@@ -499,11 +499,9 @@
       return { ok:true };
     },
     async upsertCategory(_c) {
-      // カテゴリーはlocalStorageのみで管理 — 共有Supabaseテーブルへは書き込まない
       return { ok:true };
     },
     async deleteCategory(_key) {
-      // カテゴリーはlocalStorageのみで管理 — 共有Supabaseテーブルへは書き込まない
       return { ok:true };
     },
   };
@@ -788,7 +786,7 @@
   async function fetchEnWords(phrase) { return fetchWordBreakdown(phrase, "en", "ja", /[a-zA-Z']+/g); }
   async function fetchEsWords(phrase) { return fetchWordBreakdown(phrase, "es", "ja", /[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]+/gi); }
 
-  /* ── OpenAI — Baseball/Clubhouse プロンプト ── */
+  /* ── OpenAI ── */
   async function openAIEnrich(jaText) {
     const apiKey = (localStorage.getItem("openai_api_key") || "").trim();
     if (!apiKey) throw new Error("no_key");
@@ -1059,7 +1057,7 @@ Japanese input: "${jaText}"`;
     );
   }
 
-  /* ── Phrase Modal (Add/Edit) ── */
+  /* ── Phrase Modal ── */
   function PhraseModal({ phrase, onSave, onClose, categories }) {
     const blank = { phrase:"", ipa:"", reading:"", meaning:"", phrase_es:"", ipa_es:"", words_es:[], category: categories[0]?.key || "pitching", example:"", tags:[], starred:false, words:[] };
     const initForm = () => {
@@ -1237,7 +1235,6 @@ Japanese input: "${jaText}"`;
         const saved = localStorage.getItem(STORAGE_KEYS.phrases) || localStorage.getItem("clubhouse_phrases");
         if (!saved) return INITIAL_PHRASES;
         const parsed = JSON.parse(saved);
-        // 旧バージョンの整数ID（1〜8）をUUID形式へ移行
         const legacyIdMap = {
           "1":"00000000-bb01-0000-0000-000000000001",
           "2":"00000000-bb02-0000-0000-000000000002",
