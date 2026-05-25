@@ -393,9 +393,32 @@
   </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;color:#a0a0a0;font-family:sans-serif"><span style="font-size:2rem">⚾</span><span>アプリ読み込み中...</span></div></div>
 <script type="text/babel">
   const { useState, useMemo, useCallback, useEffect, useRef } = React;
+
+  /* ── Error Boundary ── */
+  class ErrorBoundary extends React.Component {
+    constructor(props) { super(props); this.state = { error: null }; }
+    static getDerivedStateFromError(e) { return { error: e }; }
+    componentDidCatch(e, info) { console.error("[ErrorBoundary]", e, info); }
+    render() {
+      if (this.state.error) {
+        return (
+          <div style={{padding:"40px 24px",textAlign:"center",color:"#f0f0f0",background:"#111",minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px"}}>
+            <div style={{fontSize:"2.5rem"}}>⚾</div>
+            <div style={{fontSize:"1.1rem",fontWeight:"bold",color:"#ff2d78"}}>アプリの読み込みに失敗しました</div>
+            <div style={{fontSize:".85rem",color:"#a0a0a0",maxWidth:"400px"}}>ブラウザのコンソール（F12）でエラー内容を確認してください</div>
+            <div style={{fontSize:".75rem",color:"#666",background:"#1c1c1c",padding:"10px 16px",borderRadius:"8px",maxWidth:"90%",wordBreak:"break-all"}}>
+              {String(this.state.error?.message || this.state.error)}
+            </div>
+            <button onClick={()=>window.location.reload()} style={{marginTop:"8px",padding:"10px 24px",background:"#ff2d78",color:"#fff",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:"bold"}}>再読み込み</button>
+          </div>
+        );
+      }
+      return this.props.children;
+    }
+  }
 
   const SUPABASE_URL      = "https://gfwlwmyejrdugfhldpqv.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_kUCDEQeGEyAwbC8GdeGorg_1JPK7n11";
@@ -1526,7 +1549,7 @@ Japanese input: "${jaText}"`;
   }
 
   const root = ReactDOM.createRoot(document.getElementById("root"));
-  root.render(<App/>);
+  root.render(<ErrorBoundary><App/></ErrorBoundary>);
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
