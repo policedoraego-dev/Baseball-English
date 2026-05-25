@@ -441,15 +441,11 @@
     }),
     async loadAll() {
       if (!sb) return null;
-      const [pr, ca] = await Promise.all([
-        sb.from("phrases_baseball").select("*").like("category", `${DB_SCOPE_PREFIX}%`).order("created_at"),
-        sb.from("categories").select("*").like("key", `${DB_SCOPE_PREFIX}%`).order("sort_order").eq("built_in", false),
-      ]);
+      const pr = await sb.from("phrases_baseball").select("*").like("category", `${DB_SCOPE_PREFIX}%`).order("created_at");
       if (pr.error) console.warn("[Supabase] load phrases:", pr.error.message);
-      if (ca.error) console.warn("[Supabase] load categories:", ca.error.message);
       return {
         phrases:    (pr.data || []).map(this._fromRow),
-        customCats: (ca.data || []).map(r => ({ key: unscopedKey(r.key), label: r.label, paletteIdx: r.palette_idx, builtIn: false })),
+        customCats: [], // カテゴリーはlocalStorageのみ管理（医療アプリと共有テーブルを使わない）
       };
     },
     async upsertPhrase(p) {
@@ -479,22 +475,12 @@
       }
       return { ok:true };
     },
-    async upsertCategory(c) {
-      if (!sb) return { ok:false, reason:"no_supabase" };
-      const { error } = await sb.from("categories").upsert({ key: scopedKey(c.key), label: c.label, palette_idx: c.paletteIdx, built_in: false, sort_order: 100 });
-      if (error) {
-        console.warn("[Supabase] upsertCategory:", error.message);
-        return { ok:false, error };
-      }
+    async upsertCategory(_c) {
+      // カテゴリーはlocalStorageのみで管理 — 共有Supabaseテーブルへは書き込まない
       return { ok:true };
     },
-    async deleteCategory(key) {
-      if (!sb) return { ok:false, reason:"no_supabase" };
-      const { error } = await sb.from("categories").delete().eq("key", scopedKey(key));
-      if (error) {
-        console.warn("[Supabase] deleteCategory:", error.message);
-        return { ok:false, error };
-      }
+    async deleteCategory(_key) {
+      // カテゴリーはlocalStorageのみで管理 — 共有Supabaseテーブルへは書き込まない
       return { ok:true };
     },
   };
@@ -523,7 +509,7 @@
 
   const INITIAL_PHRASES = [
     {
-      id:1, category:"pitching",
+      id:"00000000-bb01-0000-0000-000000000001", category:"pitching",
       phrase:"Tunnel your pitches — keep the same arm slot for everything.",
       ipa:"/ˈtʌnəl jər ˈpɪtʃɪz/",
       reading:"タネル ユア ピッチズ",
@@ -536,7 +522,7 @@
       words_es:[{w:"Tuneliza",r:"",m:"トンネルする",note:"動詞命令形"},{w:"pitcheos",r:"",m:"投球",note:"名詞複数"},{w:"ángulo de brazo",r:"",m:"アームスロット",note:"名詞句"}],
     },
     {
-      id:2, category:"batting",
+      id:"00000000-bb02-0000-0000-000000000002", category:"batting",
       phrase:"Stay in the zone — don't chase that breaking ball low and away.",
       ipa:"/steɪ ɪn ðə zoʊn/",
       reading:"ステイ イン ザ ゾーン",
@@ -549,7 +535,7 @@
       words_es:[{w:"Quédate",r:"",m:"とどまれ",note:"再帰動詞命令形"},{w:"zona",r:"",m:"ストライクゾーン",note:"名詞"},{w:"persigas",r:"",m:"追う",note:"接続法二人称"},{w:"curva",r:"",m:"カーブ",note:"名詞"}],
     },
     {
-      id:3, category:"hype",
+      id:"00000000-bb03-0000-0000-000000000003", category:"hype",
       phrase:"Let's get it! Lock in, boys — this is our house!",
       ipa:"/lɛts ɡɛt ɪt lɒk ɪn bɔɪz/",
       reading:"レッツ ゲット イット！ロック イン、ボーイズ！",
@@ -562,7 +548,7 @@
       words_es:[{w:"Vamos",r:"",m:"行こう・やろう",note:"慣用句"},{w:"Concéntrense",r:"",m:"集中しろ",note:"再帰動詞命令形複数"},{w:"nuestra casa",r:"",m:"俺たちの家（ホーム）",note:"名詞句"}],
     },
     {
-      id:4, category:"strategy",
+      id:"00000000-bb04-0000-0000-000000000004", category:"strategy",
       phrase:"We're going to play hit-and-run on the first pitch.",
       ipa:"/wɪr ˈɡoʊɪŋ tə pleɪ hɪt ænd rʌn/",
       reading:"ウィア ゴーイング トゥ プレイ ヒット アンド ラン",
@@ -575,7 +561,7 @@
       words_es:[{w:"ejecutar",r:"",m:"実行する",note:"動詞"},{w:"primer lanzamiento",r:"",m:"初球",note:"名詞句"}],
     },
     {
-      id:5, category:"fielding",
+      id:"00000000-bb05-0000-0000-000000000005", category:"fielding",
       phrase:"Two outs, play is at first — don't overthink it.",
       ipa:"/tuː aʊts pleɪ ɪz æt fɜːrst/",
       reading:"トゥー アウツ、プレイ イズ アット ファースト",
@@ -588,7 +574,7 @@
       words_es:[{w:"outs",r:"",m:"アウト",note:"名詞複数"},{w:"primera",r:"",m:"一塁",note:"名詞"},{w:"pienses",r:"",m:"考える",note:"接続法動詞"}],
     },
     {
-      id:6, category:"clubhouse",
+      id:"00000000-bb06-0000-0000-000000000006", category:"clubhouse",
       phrase:"Great AB, man. You battled all the way to a walk — that's a win.",
       ipa:"/ɡreɪt eɪ biː mæn juː ˈbætəld ɔːl ðə weɪ/",
       reading:"グレイト エービー、マン。ユー バトルド オール ザ ウェイ",
@@ -601,7 +587,7 @@
       words_es:[{w:"turno",r:"",m:"打席",note:"名詞"},{w:"Peleaste",r:"",m:"粘った・戦った",note:"動詞過去形"},{w:"base",r:"",m:"四球・出塁",note:"名詞"}],
     },
     {
-      id:7, category:"pitching",
+      id:"00000000-bb07-0000-0000-000000000007", category:"pitching",
       phrase:"Attack the zone early — get ahead in the count.",
       ipa:"/əˈtæk ðə zoʊn ˈɜːrli ɡɛt əˈhɛd ɪn ðə kaʊnt/",
       reading:"アタック ザ ゾーン アーリー",
@@ -614,7 +600,7 @@
       words_es:[{w:"Ataca",r:"",m:"攻める",note:"動詞命令形"},{w:"zona",r:"",m:"ストライクゾーン",note:"名詞"},{w:"conteo",r:"",m:"カウント",note:"名詞"},{w:"adelante",r:"",m:"有利に",note:"副詞"}],
     },
     {
-      id:8, category:"hype",
+      id:"00000000-bb08-0000-0000-000000000008", category:"hype",
       phrase:"¡Arriba! Let's ride — nobody beats us when we play together!",
       ipa:"/əˈriːbə lɛts raɪd/",
       reading:"アリーバ！レッツ ライド！",
@@ -1226,7 +1212,23 @@ Japanese input: "${jaText}"`;
     const [phrases, setPhrases] = useState(() => {
       try {
         const saved = localStorage.getItem(STORAGE_KEYS.phrases) || localStorage.getItem("clubhouse_phrases");
-        return saved ? JSON.parse(saved) : INITIAL_PHRASES;
+        if (!saved) return INITIAL_PHRASES;
+        const parsed = JSON.parse(saved);
+        // 旧バージョンの整数ID（1〜8）をUUID形式へ移行
+        const legacyIdMap = {
+          "1":"00000000-bb01-0000-0000-000000000001",
+          "2":"00000000-bb02-0000-0000-000000000002",
+          "3":"00000000-bb03-0000-0000-000000000003",
+          "4":"00000000-bb04-0000-0000-000000000004",
+          "5":"00000000-bb05-0000-0000-000000000005",
+          "6":"00000000-bb06-0000-0000-000000000006",
+          "7":"00000000-bb07-0000-0000-000000000007",
+          "8":"00000000-bb08-0000-0000-000000000008",
+        };
+        return parsed.map(p => {
+          const k = String(p.id);
+          return (/^\d+$/.test(k) && legacyIdMap[k]) ? { ...p, id: legacyIdMap[k] } : p;
+        });
       } catch { return INITIAL_PHRASES; }
     });
     const [customCats, setCustomCats] = useState(() => {
@@ -1311,7 +1313,7 @@ Japanese input: "${jaText}"`;
     const savePhrase = async (form) => {
       const normalized = {
         ...form,
-        id: form.id || Date.now(),
+        id: form.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
         category: form.category || categories[0]?.key || "pitching",
         tags: typeof form.tags === "string" ? form.tags.split(",").map(s=>s.trim()).filter(Boolean) : (form.tags || []),
         words: form.words || [],
