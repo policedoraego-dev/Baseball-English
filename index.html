@@ -3,12 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>⚾ Clubhouse Phrase Book — City Connect Edition</title>
+  <title>MLB Phrase Book — Triple Master Edition</title>
+
+  <!-- ── PWA / iPhone ── -->
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#111111" />
+  <meta name="theme-color" content="#0a1628" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Clubhouse" />
+  <meta name="apple-mobile-web-app-title" content="Phrase Book" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+
+  <!-- Supabase クライアント -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -16,353 +21,284 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:         #111111;
-      --surface:    #1c1c1c;
-      --surface2:   #242424;
-      --surface3:   #2e2e2e;
-      --border:     #333333;
-      --pink:       #ff2d78;
-      --pink-dim:   #cc1f5e;
-      --pink-pale:  #2a0d17;
-      --mint:       #00e5a0;
-      --mint-dim:   #00b07a;
-      --mint-pale:  #001a11;
-      --gold:       #ffd700;
-      --gold-dim:   #c9a900;
-      --gold-pale:  #1f1a00;
-      --text:       #f0f0f0;
-      --text-sub:   #a0a0a0;
-      --text-muted: #666666;
-      --es-text:    #00e5a0;
-      --es-bg:      #001a11;
-      --es-border:  #00b07a;
-      --radius:     10px;
-      --shadow:     0 2px 12px rgba(0,0,0,.5);
-      --shadow-lg:  0 8px 32px rgba(0,0,0,.7);
+      --navy: #0a1628; --navy-light: #1e3460;
+      --gold: #c8a951; --gold-light: #e8c96a; --gold-pale: #fef8e7;
+      --red: #c8102e; --white: #f5f5f5;
+      --gray-100: #f0f2f5; --gray-200: #e2e6ea; --gray-400: #9aa5b4; --gray-600: #627284;
+      --text: #1a2332;
+      --es-accent: #c8102e; --es-bg: #fff5f5; --es-border: #f5b8c0;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(10,22,40,.12);
+      --shadow-lg: 0 8px 32px rgba(10,22,40,.18);
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-100); color: var(--text); min-height: 100vh; }
 
-    /* ── Header ── */
-    .header {
-      background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
-      border-bottom: 2px solid var(--pink);
-      padding: 20px 24px 16px;
-      box-shadow: 0 4px 24px rgba(255,45,120,.2);
-    }
+    /* Header */
+    .header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); color: var(--white); padding: 20px 24px 16px; box-shadow: var(--shadow-lg); }
     .header-inner { max-width: 960px; margin: 0 auto; }
     .header-top { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
-    .header-icon {
-      width: 48px; height: 48px;
-      background: radial-gradient(circle, var(--pink) 0%, var(--pink-dim) 100%);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; flex-shrink: 0;
-      box-shadow: 0 0 16px rgba(255,45,120,.5);
-    }
-    .header h1 { font-size: 1.4rem; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
-    .header-sub { font-size: .78rem; color: var(--gold); opacity: .9; margin-left: 62px; margin-top: 2px; }
-    .voice-indicator { font-size: .7rem; color: var(--text-muted); margin-left: 62px; margin-top: 2px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-    .cc-badge {
-      font-size: .62rem; background: linear-gradient(90deg, var(--pink), var(--mint));
-      color: #000; border-radius: 10px; padding: 1px 8px; font-weight: 800;
-      letter-spacing: .5px; margin-left: 6px; vertical-align: middle;
-    }
+    .header-icon { width: 44px; height: 44px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .header h1 { font-size: 1.4rem; font-weight: 700; }
+    .header-sub { font-size: .78rem; color: var(--gold-light); opacity: .9; margin-left: 58px; }
+    .voice-indicator { font-size: .7rem; color: var(--gold-light); opacity: .7; margin-left: 58px; margin-top: 2px; }
+    .triple-badge { font-size: .65rem; background: var(--gold); color: var(--navy); border-radius: 10px; padding: 1px 8px; font-weight: 700; letter-spacing: .5px; margin-left: 6px; vertical-align: middle; }
 
     .main { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
 
-    /* ── Translate Panel ── */
-    .translate-panel {
-      background: var(--surface);
-      border-radius: 14px;
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
-      margin-bottom: 24px;
-      border: 1.5px solid var(--pink);
-    }
-    .translate-panel-header {
-      background: linear-gradient(135deg, #1a0a10 0%, #2a0d17 100%);
-      padding: 12px 18px;
-      display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid var(--pink-dim);
-    }
-    .translate-panel-header-icon {
-      width: 28px; height: 28px; background: var(--pink);
-      border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
-    }
-    .translate-panel-title { font-size: .9rem; font-weight: 700; color: var(--text); }
-    .translate-panel-subtitle { font-size: .72rem; color: var(--gold); opacity: .85; margin-left: auto; }
-
+    /* ══ 翻訳パネル ══ */
+    .translate-panel { background: #fff; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; margin-bottom: 24px; border: 1.5px solid var(--gold); }
+    .translate-panel-header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); padding: 12px 18px; display: flex; align-items: center; gap: 10px; }
+    .translate-panel-header-icon { width: 28px; height: 28px; background: var(--gold); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .translate-panel-title { font-size: .9rem; font-weight: 700; color: #fff; }
+    .translate-panel-subtitle { font-size: .72rem; color: var(--gold-light); opacity: .85; margin-left: auto; }
     .translate-body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
     @media (max-width: 620px) {
       .translate-body { grid-template-columns: 1fr; }
-      .translate-divider { height: 36px; border-left: none; border-right: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .translate-divider { height: 36px; border-left: none; border-right: none; border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); }
     }
     .translate-src { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-    .translate-lang-label { font-size: .7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; }
-    .translate-textarea {
-      flex: 1; border: none; outline: none; resize: none;
-      font-size: .96rem; line-height: 1.6; color: var(--text);
-      font-family: inherit; min-height: 90px; background: transparent;
-    }
-    .translate-textarea::placeholder { color: var(--text-muted); }
+    .translate-lang-label { font-size: .7rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .8px; }
+    .translate-textarea { flex: 1; border: none; outline: none; resize: none; font-size: .96rem; line-height: 1.6; color: var(--text); font-family: inherit; min-height: 90px; background: transparent; }
+    .translate-textarea::placeholder { color: var(--gray-400); }
     .translate-src-footer { display: flex; align-items: center; justify-content: space-between; }
-    .translate-clear { background: none; border: none; cursor: pointer; font-size: .75rem; color: var(--text-muted); padding: 4px 8px; border-radius: 6px; }
-    .translate-clear:hover { color: var(--pink); background: var(--pink-pale); }
-    .char-count { font-size: .7rem; color: var(--text-muted); }
-    .translate-divider {
-      display: flex; align-items: flex-start; justify-content: center;
-      padding: 20px 4px 0; background: var(--surface2);
-      border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-    }
-    .translate-arrow-icon {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--pink); display: flex; align-items: center;
-      justify-content: center; color: #fff; font-size: 13px;
-    }
+    .translate-clear { background: none; border: none; cursor: pointer; font-size: .75rem; color: var(--gray-400); padding: 4px 8px; border-radius: 6px; }
+    .translate-clear:hover { color: var(--red); background: #fdecea; }
+    .char-count { font-size: .7rem; color: var(--gray-400); }
+    .translate-divider { display: flex; align-items: flex-start; justify-content: center; padding: 20px 4px 0; background: var(--gray-100); border-left: 1px solid var(--gray-200); border-right: 1px solid var(--gray-200); }
+    .translate-arrow-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; }
+
+    /* 右側: 言語ブロックコンテナ */
     .translate-dst { display: flex; flex-direction: column; }
-    .lang-block { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+    .lang-block { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
     .lang-block-es { background: var(--es-bg); border-top: 1.5px dashed var(--es-border); }
     .lang-flag-label { font-size: .72rem; font-weight: 700; letter-spacing: .7px; display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
-    .lang-flag-label.en { color: var(--gold); }
-    .lang-flag-label.es { color: var(--mint); }
-    .translate-result-text { font-size: 1.05rem; font-weight: 600; color: var(--text); line-height: 1.55; min-height: 50px; white-space: pre-wrap; }
-    .translate-result-text.placeholder { font-weight: 400; color: var(--text-muted); font-size: .88rem; min-height: 40px; }
-    .translate-result-text.loading { color: var(--text-muted); font-size: .88rem; font-style: italic; display: flex; align-items: center; gap: 8px; }
-    .translate-result-text.error { color: var(--pink); font-size: .85rem; font-weight: 400; }
-    .translate-result-text.es-text { color: var(--mint); }
+    .lang-flag-label.en { color: #1e3460; }
+    .lang-flag-label.es { color: var(--es-accent); }
+
+    .translate-result-text { font-size: 1.05rem; font-weight: 600; color: var(--navy); line-height: 1.55; min-height: 50px; white-space: pre-wrap; }
+    .translate-result-text.placeholder { font-weight: 400; color: var(--gray-400); font-size: .88rem; min-height: 40px; }
+    .translate-result-text.loading { color: var(--gray-400); font-size: .88rem; font-style: italic; display: flex; align-items: center; gap: 8px; }
+    .translate-result-text.error { color: var(--red); font-size: .85rem; font-weight: 400; }
+    .translate-result-text.es-text { color: #8b1a1a; }
+
+    /* IPA 自動生成エリア */
     .translate-ipa-row { display: flex; align-items: center; gap: 8px; min-height: 20px; }
-    .translate-ipa-text { font-size: .82rem; color: var(--text-muted); font-family: 'Georgia','Times New Roman',serif; letter-spacing: .3px; }
-    .translate-ipa-text.es { color: var(--mint-dim); }
-    .translate-ipa-loading { font-size: .75rem; color: var(--text-muted); font-style: italic; display: flex; align-items: center; gap: 6px; }
-    .spinner-sm { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--pink); animation: spin .7s linear infinite; flex-shrink: 0; }
+    .translate-ipa-text { font-size: .82rem; color: #5c6e8a; font-family: 'Georgia','Times New Roman',serif; letter-spacing: .3px; }
+    .translate-ipa-text.es { color: #8b4513; }
+    .translate-ipa-loading { font-size: .75rem; color: var(--gray-400); font-style: italic; display: flex; align-items: center; gap: 6px; }
+    .spinner-sm { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--gray-200); border-top-color: var(--navy-light); animation: spin .7s linear infinite; flex-shrink: 0; }
+
     .lang-speak-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-    .speak-big-btn {
-      display: flex; align-items: center; gap: 6px; padding: 7px 14px;
-      border: none; border-radius: 8px; background: var(--pink); color: #fff;
-      cursor: pointer; font-size: .82rem; font-weight: 700; transition: background .15s;
-    }
-    .speak-big-btn:hover { background: var(--pink-dim); }
+    .speak-big-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: none; border-radius: 8px; background: var(--navy); color: #fff; cursor: pointer; font-size: .82rem; font-weight: 600; transition: background .15s; }
+    .speak-big-btn:hover { background: var(--navy-light); }
     .speak-big-btn:disabled { opacity: .4; cursor: default; }
-    .speak-big-btn.speaking { background: var(--gold); color: #000; animation: pulse 1s infinite; }
-    .speak-big-btn.es-btn { background: var(--mint-dim); color: #000; }
-    .speak-big-btn.es-btn:hover { background: var(--mint); }
-    .speak-big-btn.es-btn.speaking { background: var(--gold); color: #000; }
-    .translate-save-row {
-      padding: 10px 16px 14px; border-top: 1px solid var(--border);
-      display: flex; justify-content: flex-end; background: var(--surface);
-    }
-    .save-translate-btn {
-      display: flex; align-items: center; gap: 5px; padding: 9px 18px;
-      border: 1.5px solid var(--gold); border-radius: 8px;
-      background: var(--gold-pale); cursor: pointer;
-      font-size: .85rem; font-weight: 700; color: var(--gold);
-    }
-    .save-translate-btn:hover { background: #2a2200; }
+    .speak-big-btn.speaking { background: var(--gold); color: var(--navy); animation: pulse 1s infinite; }
+    .speak-big-btn.es-btn { background: var(--es-accent); }
+    .speak-big-btn.es-btn:hover { background: #a00d26; }
+    .speak-big-btn.es-btn.speaking { background: var(--gold); color: var(--navy); }
+
+    /* 保存ボタン行 */
+    .translate-save-row { padding: 10px 16px 14px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; }
+    .save-translate-btn { display: flex; align-items: center; gap: 5px; padding: 9px 18px; border: 1.5px solid var(--gold); border-radius: 8px; background: var(--gold-pale); cursor: pointer; font-size: .85rem; font-weight: 600; color: #7a5c00; }
+    .save-translate-btn:hover { background: #fdefc7; }
     .save-translate-btn:disabled { opacity: .4; cursor: default; }
-    .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--pink); animation: spin .7s linear infinite; flex-shrink: 0; }
+    .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--gray-200); border-top-color: var(--navy-light); animation: spin .7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Toolbar ── */
+    /* Toolbar */
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
     .search-wrap { flex: 1 1 220px; position: relative; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; pointer-events: none; }
-    .search-input {
-      width: 100%; padding: 10px 12px 10px 36px;
-      border: 1.5px solid var(--border); border-radius: var(--radius);
-      font-size: .92rem; background: var(--surface); color: var(--text); outline: none; transition: border-color .15s;
-    }
-    .search-input:focus { border-color: var(--pink); }
-    .search-input::placeholder { color: var(--text-muted); }
-    .add-btn {
-      padding: 9px 18px; background: var(--pink); border: none;
-      border-radius: var(--radius); font-size: .88rem; font-weight: 700;
-      cursor: pointer; color: #fff; white-space: nowrap;
-    }
-    .add-btn:hover { background: var(--pink-dim); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 15px; pointer-events: none; }
+    .search-input { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(--gray-200); border-radius: var(--radius); font-size: .92rem; background: #fff; outline: none; transition: border-color .15s; }
+    .search-input:focus { border-color: var(--navy-light); }
+    .add-btn { padding: 9px 18px; background: var(--gold); border: none; border-radius: var(--radius); font-size: .88rem; font-weight: 600; cursor: pointer; color: var(--navy); white-space: nowrap; }
+    .add-btn:hover { background: var(--gold-light); }
 
-    /* ── Filter ── */
+    /* Filter row */
     .filter-row { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: none; align-items: center; margin-bottom: 14px; }
     .filter-row::-webkit-scrollbar { display: none; }
-    .filter-btn {
-      padding: 7px 14px; border: 1.5px solid var(--border); border-radius: 20px;
-      background: var(--surface); font-size: .82rem; cursor: pointer;
-      transition: all .15s; white-space: nowrap; color: var(--text-sub);
-      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-    }
-    .filter-btn:hover { border-color: var(--pink); color: var(--text); }
-    .filter-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+    .filter-btn { padding: 7px 14px; border: 1.5px solid var(--gray-200); border-radius: 20px; background: #fff; font-size: .82rem; cursor: pointer; transition: all .15s; white-space: nowrap; color: var(--gray-600); display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+    .filter-btn:hover { border-color: var(--navy-light); color: var(--navy); }
+    .filter-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
     .filter-btn .del-cat { font-size: .65rem; opacity: .6; margin-left: 2px; border: none; background: none; cursor: pointer; padding: 0 2px; color: inherit; }
     .filter-btn .del-cat:hover { opacity: 1; }
-    .add-cat-btn { padding: 7px 12px; border: 1.5px dashed var(--border); border-radius: 20px; background: transparent; font-size: .82rem; cursor: pointer; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-    .add-cat-btn:hover { border-color: var(--mint); color: var(--mint); }
-    .stats { font-size: .78rem; color: var(--text-muted); margin-bottom: 12px; }
+    .add-cat-btn { padding: 7px 12px; border: 1.5px dashed var(--gray-400); border-radius: 20px; background: transparent; font-size: .82rem; cursor: pointer; color: var(--gray-600); white-space: nowrap; flex-shrink: 0; }
+    .add-cat-btn:hover { border-color: var(--navy-light); color: var(--navy); }
 
-    /* ── Cards ── */
+    .stats { font-size: .78rem; color: var(--gray-600); margin-bottom: 12px; }
+
+    /* Cards */
     .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 14px; }
-    .card {
-      background: var(--surface); border-radius: var(--radius);
-      box-shadow: var(--shadow); padding: 16px 16px 0; cursor: pointer;
-      transition: transform .15s, box-shadow .15s; border-top: 3px solid transparent;
-      position: relative; display: flex; flex-direction: column;
-    }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,45,120,.2); }
-    .card-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: .7rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
-    .card-phrase { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 3px; padding-right: 62px; }
-    .card-ipa { font-size: .75rem; color: var(--text-muted); font-family: 'Georgia','Times New Roman',serif; margin-bottom: 2px; }
-    .card-reading { font-size: .78rem; color: var(--text-muted); margin-bottom: 6px; }
-    .card-es-block { margin: 6px 0 4px; padding: 6px 10px; background: var(--es-bg); border-left: 3px solid var(--mint-dim); border-radius: 0 6px 6px 0; }
-    .card-phrase-es { font-size: .9rem; font-weight: 700; color: var(--mint); line-height: 1.35; }
-    .card-ipa-es { font-size: .72rem; color: var(--mint-dim); font-family: 'Georgia','Times New Roman',serif; margin-top: 2px; }
-    .card-meaning { font-size: .86rem; color: var(--text-sub); line-height: 1.5; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+    .card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 16px 0; cursor: pointer; transition: transform .15s, box-shadow .15s; border-top: 3px solid transparent; position: relative; display: flex; flex-direction: column; }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .card-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: .7rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+    .card-phrase { font-size: 1rem; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 3px; padding-right: 62px; }
+    .card-ipa { font-size: .75rem; color: #5c6e8a; font-family: 'Georgia','Times New Roman',serif; margin-bottom: 2px; }
+    .card-reading { font-size: .78rem; color: var(--gray-400); margin-bottom: 6px; }
+    /* スペイン語行 */
+    .card-es-block { margin: 6px 0 4px; padding: 6px 10px; background: var(--es-bg); border-left: 3px solid var(--es-border); border-radius: 0 6px 6px 0; }
+    .card-phrase-es { font-size: .9rem; font-weight: 600; color: #8b1a1a; line-height: 1.35; }
+    .card-ipa-es { font-size: .72rem; color: #8b4513; font-family: 'Georgia','Times New Roman',serif; margin-top: 2px; }
+    .card-meaning { font-size: .86rem; color: var(--gray-600); line-height: 1.5; border-top: 1px solid var(--gray-200); padding-top: 8px; margin-top: 4px; }
     .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-    .tag { font-size: .68rem; padding: 2px 7px; background: var(--surface2); color: var(--text-muted); border-radius: 10px; }
+    .tag { font-size: .68rem; padding: 2px 7px; background: var(--gray-100); color: var(--gray-600); border-radius: 10px; }
     .card-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
     .card:hover .card-actions { opacity: 1; }
-    .icon-btn { width: 36px; height: 36px; border: none; background: var(--surface2); border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: background .12s; }
-    .icon-btn:hover { background: var(--surface3); }
-    .icon-btn.delete:hover { background: var(--pink-pale); }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; border-top: 1px solid var(--border); padding: 8px 0 10px; gap: 6px; }
+    .icon-btn { width: 36px; height: 36px; border: none; background: var(--gray-100); border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: background .12s; }
+    .icon-btn:hover { background: var(--gray-200); }
+    .icon-btn.delete:hover { background: #fdecea; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; border-top: 1px solid var(--gray-200); padding: 8px 0 10px; gap: 6px; }
     .card-speak-group { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
-    .speak-btn {
-      display: flex; align-items: center; gap: 5px; padding: 5px 10px;
-      border: 1.5px solid var(--border); border-radius: 20px; background: var(--surface2);
-      cursor: pointer; font-size: .74rem; color: var(--text-sub); transition: all .15s;
-    }
-    .speak-btn:hover { border-color: var(--pink); color: var(--pink); }
-    .speak-btn.speaking { border-color: var(--gold); color: var(--gold); animation: pulse 1s infinite; }
-    .speak-btn.es { border-color: var(--mint-dim); color: var(--mint); }
-    .speak-btn.es:hover { border-color: var(--mint); background: var(--mint-pale); }
-    .speak-btn.es.speaking { border-color: var(--gold); color: var(--gold); animation: pulse 1s infinite; }
-    .word-toggle-btn {
-      display: flex; align-items: center; gap: 4px; padding: 5px 10px;
-      border: 1.5px solid var(--border); border-radius: 20px; background: var(--surface2);
-      cursor: pointer; font-size: .74rem; color: var(--text-sub); transition: all .15s; flex-shrink: 0;
-    }
-    .word-toggle-btn:hover { border-color: var(--mint); color: var(--mint); }
-    .word-toggle-btn.open { border-color: var(--mint); color: var(--mint); background: var(--mint-pale); }
+    .speak-btn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1.5px solid var(--gray-200); border-radius: 20px; background: #fff; cursor: pointer; font-size: .74rem; color: var(--gray-600); transition: all .15s; }
+    .speak-btn:hover { border-color: var(--navy-light); color: var(--navy); background: #f0f4ff; }
+    .speak-btn.speaking { border-color: var(--gold); color: #7a5c00; background: var(--gold-pale); animation: pulse 1s infinite; }
+    .speak-btn.es { border-color: var(--es-border); color: var(--es-accent); }
+    .speak-btn.es:hover { border-color: var(--es-accent); background: var(--es-bg); }
+    .speak-btn.es.speaking { border-color: var(--gold); color: #7a5c00; background: var(--gold-pale); animation: pulse 1s infinite; }
+    .word-toggle-btn { display: flex; align-items: center; gap: 4px; padding: 5px 10px; border: 1.5px solid var(--gray-200); border-radius: 20px; background: #fff; cursor: pointer; font-size: .74rem; color: var(--gray-600); transition: all .15s; flex-shrink: 0; }
+    .word-toggle-btn:hover { border-color: var(--navy-light); color: var(--navy); }
+    .word-toggle-btn.open { border-color: var(--navy-light); color: var(--navy); background: #f0f4ff; }
 
-    /* ── Word Breakdown ── */
-    .word-breakdown { padding: 10px 0 12px; border-top: 1px solid var(--border); }
+    /* Word breakdown */
+    .word-breakdown { padding: 10px 0 12px; border-top: 1px solid var(--gray-200); }
     .word-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .word-chip {
-      display: inline-flex; flex-direction: column; padding: 6px 10px;
-      border: 1.5px solid var(--border); border-radius: 8px;
-      background: var(--surface2); cursor: pointer; transition: all .15s;
-    }
-    .word-chip:hover { border-color: var(--pink); background: var(--pink-pale); }
+    .word-chip { display: inline-flex; flex-direction: column; padding: 6px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px; background: var(--gray-100); cursor: pointer; transition: all .15s; }
+    .word-chip:hover { border-color: var(--navy-light); background: #eef2fb; }
     .word-chip.speaking { border-color: var(--gold); background: var(--gold-pale); }
-    .word-chip.es { border-color: var(--mint-dim); background: var(--mint-pale); }
-    .word-chip.es:hover { border-color: var(--mint); }
+    /* 🇪🇸 スペイン語チップ */
+    .word-chip.es { border-color: var(--es-border); background: var(--es-bg); }
+    .word-chip.es:hover { border-color: var(--es-accent); background: #ffe0e0; }
     .word-chip.es.speaking { border-color: var(--gold); background: var(--gold-pale); }
-    .word-chip.es .wc-en { color: var(--mint); }
+    .word-chip.es .wc-en { color: #8b1a1a; }
     .word-breakdown-label { font-size: .68rem; font-weight: 700; letter-spacing: .6px; margin: 8px 0 4px; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-    .word-breakdown-label.en { color: var(--gold); background: var(--gold-pale); }
-    .word-breakdown-label.es { color: var(--mint); background: var(--mint-pale); border: 1px solid var(--mint-dim); }
-    .wt-word-es { font-weight: 700; color: var(--mint); }
-    .wt-speak-es { background: var(--mint-pale) !important; }
-    .wt-speak-es:hover { background: var(--es-bg) !important; }
-    .wc-en { font-size: .82rem; font-weight: 700; color: var(--text); }
-    .wc-read { font-size: .65rem; color: var(--text-muted); font-style: italic; }
-    .wc-ja { font-size: .7rem; color: var(--text-sub); margin-top: 2px; }
-    .wc-note { font-size: .62rem; color: var(--text-muted); }
+    .word-breakdown-label.en { color: #1e3460; background: #e8edf8; }
+    .word-breakdown-label.es { color: var(--es-accent); background: var(--es-bg); border: 1px solid var(--es-border); }
+    /* 詳細モーダル内のスペイン語単語テーブル */
+    .wt-word-es { font-weight: 600; color: #8b1a1a; }
+    .wt-speak-es { background: var(--es-bg) !important; }
+    .wt-speak-es:hover { background: #ffd0d0 !important; }
+    .wc-en { font-size: .82rem; font-weight: 600; color: var(--text); }
+    .wc-read { font-size: .65rem; color: var(--gray-400); font-style: italic; }
+    .wc-ja { font-size: .7rem; color: var(--gray-600); margin-top: 2px; }
+    .wc-note { font-size: .62rem; color: var(--gray-400); }
 
-    /* ── Modals ── */
+    /* ══ モーダル — iOS Safari スクロール完全対応版 ══
+       設計ポイント:
+       ① modal-overlay: position:fixed で背景スクロールを遮断
+       ② modal: flex列で header/body/footer を縦に並べ高さを制御
+       ③ modal-body: flex:1 + min-height:0 が iOS flex スクロールの必須条件
+       ④ modal-footer: env(safe-area-inset-bottom) でホームバーを保護
+       ⑤ max-height に dvh を使用（iOS Safari のツールバー伸縮を反映）  */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.75);
+      position: fixed; inset: 0;
+      background: rgba(10,22,40,.5);
       display: flex; align-items: center; justify-content: center;
       z-index: 100; padding: 16px;
-      overscroll-behavior: contain;
+      /* 背景の body がガタガタしないよう下層スクロールを遮断 */
+      overscroll-behavior: none;
     }
     .modal {
-      background: var(--surface); border-radius: 14px; width: 100%; max-width: 540px;
-      box-shadow: var(--shadow-lg); overflow: hidden;
-      display: flex; flex-direction: column; border: 1px solid var(--border);
-      max-height: 88vh;
-      max-height: 88dvh;
+      background: #fff; border-radius: 14px; width: 100%; max-width: 540px;
+      box-shadow: var(--shadow-lg);
+      /* overflow:hidden を外し、各子要素に直接 border-radius を持たせる。
+         iOS Safari では overflow:hidden の親が子の touch-scroll を妨げる場合があるため。 */
+      /* max-height で画面内に収める（dvh = ツールバー伸縮を考慮した動的vh） */
+      max-height: 90vh;
+      max-height: 90dvh;
+      display: flex; flex-direction: column;
     }
     .modal-sm { max-width: 360px; }
-    .modal-header { background: linear-gradient(135deg, #1a0a10, #2a0d17); color: var(--text); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid var(--pink-dim); }
-    .modal-header h2 { font-size: 1rem; font-weight: 700; }
-    .modal-close { background: none; border: none; color: var(--text); font-size: 1.2rem; cursor: pointer; opacity: .8; line-height: 1; }
-    .modal-close:hover { opacity: 1; color: var(--pink); }
-    .modal > form {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
+    .modal-header {
+      background: var(--navy); color: #fff;
+      padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;  /* ヘッダーは縮めない */
+      border-radius: 14px 14px 0 0; /* overflow:hidden を外したので直接指定 */
     }
+    .modal-header h2 { font-size: 1rem; font-weight: 600; }
+    .modal-close { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; opacity: .8; line-height: 1; }
+    .modal-close:hover { opacity: 1; }
     .modal-body {
       padding: 20px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      flex: 1 1 auto;
-      min-height: 0;
+      /* ① flex:1 で残りの高さを全て使う
+         ② min-height:0 が必須 — これがないと iOS flex では overflow が効かない
+         ③ overflow-y:scroll（auto より確実に iOS でスクロール領域を生成する）  */
+      flex: 1; min-height: 0;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch; /* iOS 慣性スクロール */
+      overscroll-behavior: contain;      /* body への伝播を防ぐ */
     }
     .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: .8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 4px; }
-    .form-control {
-      width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
-      border-radius: 8px; font-size: .9rem; outline: none; transition: border-color .15s;
-      font-family: inherit; background: var(--surface2); color: var(--text);
-    }
-    .form-control:focus { border-color: var(--pink); }
+    label { display: block; font-size: .8rem; font-weight: 600; color: var(--gray-600); margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 9px 12px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: .9rem; outline: none; transition: border-color .15s; font-family: inherit; }
+    .form-control:focus { border-color: var(--navy-light); }
     select.form-control { cursor: pointer; }
     textarea.form-control { resize: vertical; min-height: 70px; }
     .modal-footer {
+      /* flex-shrink:0 でフッターが潰れない。ボタンが常に表示される */
+      flex-shrink: 0;
+      padding: 12px 20px;
+      /* env(safe-area-inset-bottom): iPhone ホームバー / ツールバーの高さ分だけ余白を追加
+         最低 20px を保証し、ホームバーのあるデバイスは自動で拡張される              */
+      padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
       display: flex; justify-content: flex-end; gap: 10px;
-      flex-shrink: 0; border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-      padding: 12px 20px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+      background: #fff;
+      border-top: 1px solid var(--gray-100); /* スクロール中も区切りが見える */
+      border-radius: 0 0 14px 14px; /* overflow:hidden を外したので直接指定 */
     }
-    .btn-cancel { padding: 8px 18px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface2); cursor: pointer; font-size: .88rem; color: var(--text-sub); }
-    .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
-    .btn-save { padding: 8px 22px; background: var(--pink); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: .88rem; font-weight: 700; }
-    .btn-save:hover { background: var(--pink-dim); }
+    .btn-cancel { padding: 8px 18px; border: 1.5px solid var(--gray-200); border-radius: 8px; background: #fff; cursor: pointer; font-size: .88rem; color: var(--gray-600); }
+    .btn-cancel:hover { border-color: var(--gray-400); }
+    .btn-save { padding: 8px 22px; background: var(--navy); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: .88rem; font-weight: 600; }
+    .btn-save:hover { background: var(--navy-light); }
+
+    /* フォームセクション区切り */
     .form-section-label { font-size: .72rem; font-weight: 700; letter-spacing: .7px; padding: 8px 10px 6px; border-radius: 6px; margin: 16px 0 10px; }
-    .form-section-label.en { background: var(--gold-pale); color: var(--gold); }
-    .form-section-label.es { background: var(--mint-pale); color: var(--mint); border: 1px solid var(--mint-dim); }
+    .form-section-label.en { background: #e8edf8; color: #1e3460; }
+    .form-section-label.es { background: var(--es-bg); color: var(--es-accent); border: 1px solid var(--es-border); }
+
+    /* Color swatches */
     .color-swatch-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .1s; }
     .color-swatch:hover { transform: scale(1.15); }
-    .color-swatch.selected { border-color: var(--text); transform: scale(1.15); }
+    .color-swatch.selected { border-color: var(--navy); transform: scale(1.15); }
 
-    /* ── Detail Modal ── */
-    .detail-phrase { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-    .detail-ipa { font-size: .85rem; color: var(--text-muted); font-family: 'Georgia','Times New Roman',serif; margin-bottom: 4px; }
-    .detail-reading { font-size: .85rem; color: var(--text-muted); margin-bottom: 12px; }
+    /* Detail modal */
+    .detail-phrase { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .detail-ipa { font-size: .85rem; color: #5c6e8a; font-family: 'Georgia','Times New Roman',serif; margin-bottom: 4px; }
+    .detail-reading { font-size: .85rem; color: var(--gray-400); margin-bottom: 12px; }
     .detail-speak-row { margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .detail-speak-btn { display: flex; align-items: center; gap: 6px; padding: 9px 18px; border: none; border-radius: 8px; background: var(--pink); color: #fff; cursor: pointer; font-size: .88rem; font-weight: 700; }
-    .detail-speak-btn:hover { background: var(--pink-dim); }
-    .detail-speak-btn.speaking { background: var(--gold); color: #000; animation: pulse 1s infinite; }
-    .detail-speak-btn.es-btn { background: var(--mint-dim); color: #000; }
-    .detail-speak-btn.es-btn:hover { background: var(--mint); }
-    .detail-es-block { background: var(--es-bg); border: 1.5px solid var(--mint-dim); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
-    .detail-es-phrase { font-size: 1.1rem; font-weight: 800; color: var(--mint); margin-bottom: 3px; }
-    .detail-es-ipa { font-size: .82rem; color: var(--mint-dim); font-family: 'Georgia','Times New Roman',serif; margin-bottom: 10px; }
+    .detail-speak-btn { display: flex; align-items: center; gap: 6px; padding: 9px 18px; border: none; border-radius: 8px; background: var(--navy); color: #fff; cursor: pointer; font-size: .88rem; font-weight: 600; }
+    .detail-speak-btn:hover { background: var(--navy-light); }
+    .detail-speak-btn.speaking { background: var(--gold); color: var(--navy); animation: pulse 1s infinite; }
+    .detail-speak-btn.es-btn { background: var(--es-accent); }
+    .detail-speak-btn.es-btn:hover { background: #a00d26; }
+    /* ES ブロック */
+    .detail-es-block { background: var(--es-bg); border: 1.5px solid var(--es-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+    .detail-es-phrase { font-size: 1.1rem; font-weight: 700; color: #8b1a1a; margin-bottom: 3px; }
+    .detail-es-ipa { font-size: .82rem; color: #8b4513; font-family: 'Georgia','Times New Roman',serif; margin-bottom: 10px; }
     .detail-section { margin-bottom: 14px; }
-    .detail-label { font-size: .73rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 6px; }
+    .detail-label { font-size: .73rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 6px; }
     .detail-value { font-size: .9rem; color: var(--text); line-height: 1.55; }
-    .detail-example { font-style: italic; color: var(--gold); font-size: .88rem; }
+    .detail-example { font-style: italic; color: var(--navy-light); font-size: .88rem; }
     .word-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
-    .word-table th { text-align: left; font-size: .7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; padding: 0 8px 6px 0; border-bottom: 1px solid var(--border); }
-    .word-table td { padding: 7px 8px 7px 0; border-bottom: 1px solid var(--surface2); vertical-align: top; }
+    .word-table th { text-align: left; font-size: .7rem; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; padding: 0 8px 6px 0; border-bottom: 1px solid var(--gray-200); }
+    .word-table td { padding: 7px 8px 7px 0; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
     .word-table tr:last-child td { border-bottom: none; }
-    .wt-word { font-weight: 700; color: var(--text); }
-    .wt-read { font-size: .75rem; color: var(--text-muted); font-style: italic; display: block; margin-top: 1px; }
-    .wt-ja { color: var(--text-sub); }
-    .wt-note { font-size: .74rem; color: var(--mint); padding: 1px 7px; background: var(--mint-pale); border-radius: 10px; }
-    .wt-speak { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
-    .wt-speak:hover { background: var(--pink-pale); color: var(--pink); }
-    .wt-speak.speaking { background: var(--gold-pale); color: var(--gold); }
+    .wt-word { font-weight: 600; color: var(--text); }
+    .wt-read { font-size: .75rem; color: var(--gray-400); font-style: italic; display: block; margin-top: 1px; }
+    .wt-ja { color: var(--gray-600); }
+    .wt-note { font-size: .74rem; color: #7b91b0; padding: 1px 7px; background: #eef2fb; border-radius: 10px; }
+    .wt-speak { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--gray-100); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .wt-speak:hover { background: #dde3ec; }
+    .wt-speak.speaking { background: var(--gold-pale); }
 
-    .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty { text-align: center; padding: 60px 20px; color: var(--gray-400); }
     .empty-icon { font-size: 3rem; margin-bottom: 12px; }
     .empty p { font-size: .92rem; }
 
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
-    /* ── iPhone safe area ── */
+    /* ══ iPhone / モバイル最適化 ══ */
     .header { padding-top: max(20px, env(safe-area-inset-top)); }
     .main   { padding-bottom: max(40px, calc(env(safe-area-inset-bottom) + 24px)); }
     .filter-btn, .add-cat-btn { flex-shrink: 0; }
@@ -371,85 +307,62 @@
 
     @media (max-width: 520px) {
       .card-grid { grid-template-columns: 1fr; }
-      .header h1 { font-size: 1.15rem; }
+      .header h1 { font-size: 1.2rem; }
       .translate-body { grid-template-columns: 1fr; }
-      .translate-divider { border-left: none; border-right: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 36px; padding: 0; }
+      .translate-divider { border-left: none; border-right: none; border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); height: 36px; padding: 0; }
       .translate-arrow-icon { transform: rotate(90deg); }
-      .modal {
-        border-radius: 18px 18px 0 0;
-        position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-        max-height: 90vh;
-        max-height: 90dvh;
-      }
-      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal { border-radius: 18px 18px 0 0; max-height: 95vh; max-height: 95dvh; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; }
+      .modal-header { border-radius: 18px 18px 0 0; }
+      .modal-footer { border-radius: 0; }
+      .modal-overlay { align-items: flex-end; }
     }
 
+    /* オフラインバナー */
     .offline-banner { background: #7b1fa2; color: #fff; text-align: center; font-size: .78rem; padding: 6px 16px; position: sticky; top: 0; z-index: 200; }
-    .settings-btn { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; color: var(--text); cursor: pointer; font-size: 16px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
-    .settings-btn:hover { background: rgba(255,45,120,.2); border-color: var(--pink); }
+
+    /* 設定ボタン */
+    .settings-btn { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; cursor: pointer; font-size: 16px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+    .settings-btn:hover { background: rgba(255,255,255,.22); }
+    /* API モードバッジ */
     .api-mode-badge { font-size: .65rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; letter-spacing: .4px; }
     .api-mode-badge.openai { background: #10a37f; color: #fff; }
-    .api-mode-badge.fallback { background: rgba(255,255,255,.1); color: var(--gold); }
+    .api-mode-badge.fallback { background: rgba(255,255,255,.15); color: var(--gold-light); }
+    /* 設定モーダル */
     .settings-key-input { font-family: monospace; letter-spacing: .05em; }
-    .settings-note { font-size: .73rem; color: var(--text-muted); line-height: 1.55; margin-top: 6px; }
-    .settings-note strong { color: #00e5a0; }
-
-    /* neon glow effects */
-    .neon-pink { text-shadow: 0 0 8px rgba(255,45,120,.8); }
-    .neon-mint  { text-shadow: 0 0 8px rgba(0,229,160,.8); }
+    .settings-note { font-size: .73rem; color: var(--gray-400); line-height: 1.55; margin-top: 6px; }
+    .settings-note strong { color: #2e7d32; }
   </style>
 </head>
 <body>
-<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;color:#a0a0a0;font-family:sans-serif"><span style="font-size:2rem">⚾</span><span>アプリ読み込み中...</span></div></div>
+<div id="root"></div>
 <script type="text/babel">
   const { useState, useMemo, useCallback, useEffect, useRef } = React;
 
-  /* ── Error Boundary ── */
-  class ErrorBoundary extends React.Component {
-    constructor(props) { super(props); this.state = { error: null }; }
-    static getDerivedStateFromError(e) { return { error: e }; }
-    componentDidCatch(e, info) { console.error("[ErrorBoundary]", e, info); }
-    render() {
-      if (this.state.error) {
-        return (
-          <div style={{padding:"40px 24px",textAlign:"center",color:"#f0f0f0",background:"#111",minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px"}}>
-            <div style={{fontSize:"2.5rem"}}>⚾</div>
-            <div style={{fontSize:"1.1rem",fontWeight:"bold",color:"#ff2d78"}}>アプリの読み込みに失敗しました</div>
-            <div style={{fontSize:".85rem",color:"#a0a0a0",maxWidth:"400px"}}>ブラウザのコンソール（F12）でエラー内容を確認してください</div>
-            <div style={{fontSize:".75rem",color:"#666",background:"#1c1c1c",padding:"10px 16px",borderRadius:"8px",maxWidth:"90%",wordBreak:"break-all"}}>
-              {String(this.state.error?.message || this.state.error)}
-            </div>
-            <button onClick={()=>window.location.reload()} style={{marginTop:"8px",padding:"10px 24px",background:"#ff2d78",color:"#fff",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:"bold"}}>再読み込み</button>
-          </div>
-        );
-      }
-      return this.props.children;
-    }
-  }
-
+  /* ══════════════════════════════════════════════════════════
+     ▼ Supabase 設定
+  ══════════════════════════════════════════════════════════ */
   const SUPABASE_URL      = "https://gfwlwmyejrdugfhldpqv.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_kUCDEQeGEyAwbC8GdeGorg_1JPK7n11";
+  const APP_ID            = "mlb";
 
+  /* ══════════════════════════════════════════════════════════
+     ▼ APP CONFIG — 将来の多言語分離・商用展開用
+       "en" のみ → langs: ["en"]  （英語版アプリ）
+       "es" のみ → langs: ["es"]  （スペイン語版アプリ）
+       両方     → langs: ["en","es"] （現在: トリプルマスター）
+  ══════════════════════════════════════════════════════════ */
   const APP_CONFIG = {
-    appId:       "clubhouse_phrase_book_city_connect_v1",
-    appName:     "Clubhouse Phrase Book",
-    edition:     "City Connect",
-    langs:       ["en", "es"],
+    appName:     "MLB Phrase Book",
+    edition:     "Triple Master",
+    langs:       ["en", "es"],   // ← ここだけ変えれば言語を制御できる
     primaryLang: "en",
     inputLang:   "ja",
   };
-  const HAS_EN = true;
-  const HAS_ES = true;
 
-  const STORAGE_KEYS = {
-    phrases:    `${APP_CONFIG.appId}:phrases`,
-    customCats: `${APP_CONFIG.appId}:custom_categories`,
-  };
+  const HAS_EN = APP_CONFIG.langs.includes("en");
+  const HAS_ES = APP_CONFIG.langs.includes("es");
 
-  const DB_SCOPE_PREFIX = `${APP_CONFIG.appId}:`;
-  const scopedKey = (key) => String(key || "").startsWith(DB_SCOPE_PREFIX) ? String(key || "") : `${DB_SCOPE_PREFIX}${key}`;
-  const unscopedKey = (key) => String(key || "").startsWith(DB_SCOPE_PREFIX) ? String(key || "").slice(DB_SCOPE_PREFIX.length) : String(key || "");
-
+  /* ── Supabase クライアント ──────────────────────────────── */
   const sb = (() => {
     try {
       if (!SUPABASE_URL.includes("YOUR") && window.supabase)
@@ -458,12 +371,13 @@
     return null;
   })();
 
+  /* ── DB ヘルパー ────────────────────────────────────────── */
   const db = {
     ready: !!sb,
-    _fromRow: (r) => ({ ...r, category: unscopedKey(r.category), tags: r.tags || [], words: r.words || [], phrase_es: r.phrase_es || "", ipa_es: r.ipa_es || "", words_es: r.words_es || [] }),
+    _fromRow: (r) => ({ ...r, tags: r.tags || [], words: r.words || [], phrase_es: r.phrase_es || "", ipa_es: r.ipa_es || "", words_es: r.words_es || [] }),
     _toRow: (p) => ({
       id: p.id, phrase: p.phrase, ipa: p.ipa || "", reading: p.reading || "",
-      meaning: p.meaning || "", category: scopedKey(p.category), example: p.example || "",
+      meaning: p.meaning || "", category: p.category, example: p.example || "",
       tags: Array.isArray(p.tags) ? p.tags : [],
       starred: !!p.starred, words: p.words || [],
       phrase_es: p.phrase_es || "", ipa_es: p.ipa_es || "",
@@ -471,178 +385,108 @@
     }),
     async loadAll() {
       if (!sb) return null;
-      const pr = await sb.from("phrases_baseball").select("*").like("category", `${DB_SCOPE_PREFIX}%`).order("created_at");
-      if (pr.error) console.warn("[Supabase] load phrases:", pr.error.message);
+      const [pr, ca] = await Promise.all([
+        sb.from("phrases").select("*").order("created_at"),
+        sb.from("categories").select("*").order("sort_order").like("key", APP_ID + "-%"),
+      ]);
       return {
         phrases:    (pr.data || []).map(this._fromRow),
-        customCats: [],
+        customCats: (ca.data || []).map(r => ({ key: r.key, label: r.label, paletteIdx: r.palette_idx, builtIn: false })),
       };
     },
     async upsertPhrase(p) {
-      if (!sb) return { ok:false, reason:"no_supabase" };
+      if (!sb) return;
       const row = this._toRow(p);
+      /* ══════════════════════════════════════════════════════
+         最終安全装置 — Supabase upsert 直前の強制フォールバック
+         API 失敗・タイミングずれ・あらゆる経路で空になった場合に
+         ここで必ず有効な値を補完する。                         */
+
+      /* ① words: 空配列 → phrase をスペース分割 */
       if (!row.words || row.words.length === 0) {
-        row.words = (row.phrase || "").split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
+        row.words = (row.phrase || "")
+          .split(/\s+/).filter(Boolean)
+          .map(w => ({ w, m: "", r: "", note: "" }));
+        console.info("[SafeGuard] words fallback:", row.words);
       }
+
+      /* ② words_es: 空配列 → phrase_es をスペース分割 */
       if (!row.words_es || row.words_es.length === 0) {
-        row.words_es = (row.phrase_es || "").split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
+        row.words_es = (row.phrase_es || "")
+          .split(/\s+/).filter(Boolean)
+          .map(w => ({ w, m: "", r: "", note: "" }));
+        if (row.phrase_es)
+          console.info("[SafeGuard] words_es fallback:", row.words_es);
       }
-      if (!row.ipa && row.phrase)       row.ipa    = "/" + row.phrase + "/";
-      if (!row.ipa_es && row.phrase_es) row.ipa_es = "/" + row.phrase_es + "/";
-      const { error } = await sb.from("phrases_baseball").upsert(row);
-      if (error) {
-        console.warn("[Supabase] upsertPhrase:", error.message);
-        return { ok:false, error };
+
+      /* ③ ipa: 空文字 → "/" + phrase + "/" */
+      if (!row.ipa && row.phrase) {
+        row.ipa = "/" + row.phrase + "/";
+        console.info("[SafeGuard] ipa fallback:", row.ipa);
       }
-      return { ok:true };
+
+      /* ④ ipa_es: 空文字 → "/" + phrase_es + "/" */
+      if (!row.ipa_es && row.phrase_es) {
+        row.ipa_es = "/" + row.phrase_es + "/";
+        console.info("[SafeGuard] ipa_es fallback:", row.ipa_es);
+      }
+      /* ═══════════════════════════════════════════════════════ */
+      const { error } = await sb.from("phrases").upsert(row);
+      if (error) console.warn("[Supabase] upsertPhrase:", error.message);
     },
     async deletePhrase(id) {
-      if (!sb) return { ok:false, reason:"no_supabase" };
-      const { error } = await sb.from("phrases_baseball").delete().eq("id", id);
-      if (error) {
-        console.warn("[Supabase] deletePhrase:", error.message);
-        return { ok:false, error };
-      }
-      return { ok:true };
+      if (!sb) return;
+      const { error } = await sb.from("phrases").delete().eq("id", id);
+      if (error) console.warn("[Supabase] deletePhrase:", error.message);
     },
-    async upsertCategory(_c) {
-      return { ok:true };
+    async upsertCategory(c) {
+      if (!sb) return;
+      const { error } = await sb.from("categories").upsert({ key: c.key, label: c.label, palette_idx: c.paletteIdx, built_in: false, sort_order: 100 });
+      if (error) console.warn("[Supabase] upsertCategory:", error.message);
     },
-    async deleteCategory(_key) {
-      return { ok:true };
+    async deleteCategory(key) {
+      if (!sb) return;
+      const { error } = await sb.from("categories").delete().eq("key", key);
+      if (error) console.warn("[Supabase] deleteCategory:", error.message);
     },
   };
 
+  /* ── カラーパレット ─────────────────────────────────────── */
   const PALETTE = [
-    { border:"#ff2d78", bg:"#2a0d17", text:"#ff2d78" },
-    { border:"#ffd700", bg:"#1f1a00", text:"#ffd700" },
-    { border:"#00e5a0", bg:"#001a11", text:"#00e5a0" },
-    { border:"#7c4dff", bg:"#1a0f2e", text:"#b39ddb" },
-    { border:"#ff6d00", bg:"#1f0d00", text:"#ff9d4d" },
-    { border:"#00b0ff", bg:"#001a2e", text:"#4fc3f7" },
-    { border:"#f50057", bg:"#2a0010", text:"#ff4081" },
-    { border:"#76ff03", bg:"#0d1a00", text:"#b2ff59" },
+    { border:"#1e3460", bg:"#e8edf8", text:"#1e3460" },
+    { border:"#c8a951", bg:"#fef8e7", text:"#7a5c00" },
+    { border:"#c8102e", bg:"#fdecea", text:"#c8102e" },
+    { border:"#2e7d32", bg:"#e8f5e9", text:"#1b5e20" },
+    { border:"#7b1fa2", bg:"#f3e5f5", text:"#6a1b9a" },
+    { border:"#00838f", bg:"#e0f7fa", text:"#006064" },
+    { border:"#e65100", bg:"#fff3e0", text:"#bf360c" },
+    { border:"#1565c0", bg:"#e3f2fd", text:"#0d47a1" },
   ];
   function palColor(idx) { return PALETTE[idx % PALETTE.length]; }
 
   const DEFAULT_CATEGORIES = [
-    { key:"pitching",   label:"⚾ ピッチング",    paletteIdx:0, builtIn:true },
-    { key:"batting",    label:"🏏 バッティング",   paletteIdx:1, builtIn:true },
-    { key:"fielding",   label:"🧤 フィールディング",paletteIdx:2, builtIn:true },
-    { key:"clubhouse",  label:"🏟 クラブハウス",   paletteIdx:3, builtIn:true },
-    { key:"game-day",   label:"🔥 ゲームデー",     paletteIdx:4, builtIn:true },
-    { key:"strategy",   label:"📋 戦術",           paletteIdx:5, builtIn:true },
-    { key:"hype",       label:"💥 ハイプ",         paletteIdx:6, builtIn:true },
+    { key:"treatment", label:"🩺 治療",        paletteIdx:0, builtIn:true },
+    { key:"clubhouse",  label:"🏟 クラブハウス", paletteIdx:1, builtIn:true },
+    { key:"game-day",   label:"⚾ ゲームデー",  paletteIdx:2, builtIn:true },
+    { key:"recovery",   label:"🧊 リカバリー",  paletteIdx:3, builtIn:true },
+    { key:"injury",     label:"🚨 インジャリー", paletteIdx:4, builtIn:true },
   ];
 
+  /* ── フレーズ初期データ ─────────────────────────────────── */
   const INITIAL_PHRASES = [
-    {
-      id:"00000000-bb01-0000-0000-000000000001", category:"pitching",
-      phrase:"Tunnel your pitches — keep the same arm slot for everything.",
-      ipa:"/ˈtʌnəl jər ˈpɪtʃɪz/",
-      reading:"タネル ユア ピッチズ",
-      meaning:"球種をトンネリングしろ — 全部同じアームスロットで投げろ。",
-      phrase_es:"Tuneliza tus pitcheos — mantén el mismo ángulo de brazo para todo.",
-      ipa_es:"/tuneˈliθa tus ˈpitʃeos/",
-      example:"If they can't tell if it's a slider or a four-seam, you've got 'em. Tunnel your pitches.",
-      tags:["mechanics","deception"], starred:true,
-      words:[{w:"Tunnel",r:"",m:"トンネルする",note:"動詞"},{w:"pitches",r:"",m:"投球",note:"名詞複数"},{w:"arm slot",r:"",m:"アームスロット",note:"投球フォームの腕の角度"}],
-      words_es:[{w:"Tuneliza",r:"",m:"トンネルする",note:"動詞命令形"},{w:"pitcheos",r:"",m:"投球",note:"名詞複数"},{w:"ángulo de brazo",r:"",m:"アームスロット",note:"名詞句"}],
-    },
-    {
-      id:"00000000-bb02-0000-0000-000000000002", category:"batting",
-      phrase:"Stay in the zone — don't chase that breaking ball low and away.",
-      ipa:"/steɪ ɪn ðə zoʊn/",
-      reading:"ステイ イン ザ ゾーン",
-      meaning:"ゾーンにとどまれ — 低め外角の変化球を追うな。",
-      phrase_es:"Quédate en la zona — no persigas esa curva baja y afuera.",
-      ipa_es:"/ˈkedate en la ˈθona/",
-      example:"Two strikes, he's going to try to bury a slider. Stay in the zone.",
-      tags:["plate-discipline","two-strikes"], starred:true,
-      words:[{w:"Stay",r:"",m:"とどまる",note:"動詞"},{w:"zone",r:"",m:"ストライクゾーン",note:"名詞"},{w:"chase",r:"",m:"追う",note:"動詞"},{w:"breaking ball",r:"",m:"変化球",note:"名詞"}],
-      words_es:[{w:"Quédate",r:"",m:"とどまれ",note:"再帰動詞命令形"},{w:"zona",r:"",m:"ストライクゾーン",note:"名詞"},{w:"persigas",r:"",m:"追う",note:"接続法二人称"},{w:"curva",r:"",m:"カーブ",note:"名詞"}],
-    },
-    {
-      id:"00000000-bb03-0000-0000-000000000003", category:"hype",
-      phrase:"Let's get it! Lock in, boys — this is our house!",
-      ipa:"/lɛts ɡɛt ɪt lɒk ɪn bɔɪz/",
-      reading:"レッツ ゲット イット！ロック イン、ボーイズ！",
-      meaning:"行くぞ！集中しろ、みんな — ここは俺たちのグラウンドだ！",
-      phrase_es:"¡Vamos! ¡Concéntrense, muchachos — esta es nuestra casa!",
-      ipa_es:"/ˈbamos konˈsentren se muˈtʃatʃos/",
-      example:"Before stepping onto the field: Let's get it! Lock in, boys — this is our house!",
-      tags:["motivation","pre-game","hype"], starred:true,
-      words:[{w:"Let's get it",r:"",m:"行くぞ・やってやろう",note:"慣用句"},{w:"Lock in",r:"",m:"集中する",note:"句動詞"},{w:"our house",r:"",m:"俺たちのホーム",note:"比喩"}],
-      words_es:[{w:"Vamos",r:"",m:"行こう・やろう",note:"慣用句"},{w:"Concéntrense",r:"",m:"集中しろ",note:"再帰動詞命令形複数"},{w:"nuestra casa",r:"",m:"俺たちの家（ホーム）",note:"名詞句"}],
-    },
-    {
-      id:"00000000-bb04-0000-0000-000000000004", category:"strategy",
-      phrase:"We're going to play hit-and-run on the first pitch.",
-      ipa:"/wɪr ˈɡoʊɪŋ tə pleɪ hɪt ænd rʌn/",
-      reading:"ウィア ゴーイング トゥ プレイ ヒット アンド ラン",
-      meaning:"初球にヒットエンドランをかける。",
-      phrase_es:"Vamos a ejecutar el hit-and-run en el primer lanzamiento.",
-      ipa_es:"/ˈbamos a exeˈkutar el ˈhit ænd rʌn/",
-      example:"Runner on first, no outs — we're going to play hit-and-run on the first pitch.",
-      tags:["situational","baserunning","manager"], starred:false,
-      words:[{w:"hit-and-run",r:"",m:"ヒットエンドラン",note:"戦術名"},{w:"first pitch",r:"",m:"初球",note:"名詞句"}],
-      words_es:[{w:"ejecutar",r:"",m:"実行する",note:"動詞"},{w:"primer lanzamiento",r:"",m:"初球",note:"名詞句"}],
-    },
-    {
-      id:"00000000-bb05-0000-0000-000000000005", category:"fielding",
-      phrase:"Two outs, play is at first — don't overthink it.",
-      ipa:"/tuː aʊts pleɪ ɪz æt fɜːrst/",
-      reading:"トゥー アウツ、プレイ イズ アット ファースト",
-      meaning:"ツーアウト、プレーはファーストへ — 考えすぎるな。",
-      phrase_es:"Dos outs, el out es en primera — no lo pienses tanto.",
-      ipa_es:"/dos auts el awt es en ˈprimeɾa/",
-      example:"Ground ball coming — two outs, play is at first. Simple.",
-      tags:["defense","situational-awareness"], starred:false,
-      words:[{w:"outs",r:"",m:"アウトカウント",note:"名詞複数"},{w:"play is at",r:"",m:"プレーは〜へ",note:"野球慣用句"},{w:"overthink",r:"",m:"考えすぎる",note:"動詞"}],
-      words_es:[{w:"outs",r:"",m:"アウト",note:"名詞複数"},{w:"primera",r:"",m:"一塁",note:"名詞"},{w:"pienses",r:"",m:"考える",note:"接続法動詞"}],
-    },
-    {
-      id:"00000000-bb06-0000-0000-000000000006", category:"clubhouse",
-      phrase:"Great AB, man. You battled all the way to a walk — that's a win.",
-      ipa:"/ɡreɪt eɪ biː mæn juː ˈbætəld ɔːl ðə weɪ/",
-      reading:"グレイト エービー、マン。ユー バトルド オール ザ ウェイ",
-      meaning:"ナイス打席だよ。最後まで粘って四球をもぎ取った — それは勝ちだ。",
-      phrase_es:"Buen turno, mano. Peleaste hasta el final y sacaste una base — eso es una victoria.",
-      ipa_es:"/bwen ˈturno ˈmano peleˈaste asta el fiˈnal/",
-      example:"After a tough 9-pitch at-bat: Great AB, man. You battled all the way to a walk.",
-      tags:["encouragement","plate-discipline"], starred:false,
-      words:[{w:"AB",r:"エービー",m:"打席（At Bat）",note:"略語"},{w:"battled",r:"",m:"粘った・戦った",note:"動詞過去形"},{w:"walk",r:"",m:"四球",note:"野球用語"}],
-      words_es:[{w:"turno",r:"",m:"打席",note:"名詞"},{w:"Peleaste",r:"",m:"粘った・戦った",note:"動詞過去形"},{w:"base",r:"",m:"四球・出塁",note:"名詞"}],
-    },
-    {
-      id:"00000000-bb07-0000-0000-000000000007", category:"pitching",
-      phrase:"Attack the zone early — get ahead in the count.",
-      ipa:"/əˈtæk ðə zoʊn ˈɜːrli ɡɛt əˈhɛd ɪn ðə kaʊnt/",
-      reading:"アタック ザ ゾーン アーリー",
-      meaning:"早いカウントでゾーンを攻めろ — カウントを有利にしろ。",
-      phrase_es:"Ataca la zona temprano — ve adelante en el conteo.",
-      ipa_es:"/aˈtaka la ˈθona temˈpɾano/",
-      example:"Their lineup is patient. Attack the zone early — get ahead in the count before they work you.",
-      tags:["pitching-strategy","count"], starred:true,
-      words:[{w:"Attack the zone",r:"",m:"ゾーンを攻める",note:"野球慣用句"},{w:"get ahead",r:"",m:"有利なカウントにする",note:"句動詞"},{w:"count",r:"",m:"カウント（ボール・ストライク）",note:"名詞"}],
-      words_es:[{w:"Ataca",r:"",m:"攻める",note:"動詞命令形"},{w:"zona",r:"",m:"ストライクゾーン",note:"名詞"},{w:"conteo",r:"",m:"カウント",note:"名詞"},{w:"adelante",r:"",m:"有利に",note:"副詞"}],
-    },
-    {
-      id:"00000000-bb08-0000-0000-000000000008", category:"hype",
-      phrase:"¡Arriba! Let's ride — nobody beats us when we play together!",
-      ipa:"/əˈriːbə lɛts raɪd/",
-      reading:"アリーバ！レッツ ライド！",
-      meaning:"行け！乗っていこう — 一致団結したら誰も俺たちに勝てない！",
-      phrase_es:"¡Arriba! ¡Vámonos — nadie nos gana cuando jugamos juntos!",
-      ipa_es:"/aˈriβa ˈbamonos ˈnaðje nos ˈɣana/",
-      example:"After a big inning: ¡Arriba! Let's ride — nobody beats us when we play together!",
-      tags:["bilingual","rally","team"], starred:true,
-      words:[{w:"Arriba",r:"アリーバ",m:"行け！（スペイン語）",note:"感嘆詞"},{w:"Let's ride",r:"",m:"乗っていこう",note:"慣用句"},{w:"play together",r:"",m:"一緒に戦う",note:"動詞句"}],
-      words_es:[{w:"Arriba",r:"",m:"行け！上へ！",note:"感嘆詞"},{w:"Vámonos",r:"",m:"行こう！",note:"ir の命令複数形"},{w:"juntos",r:"",m:"一緒に",note:"副詞・形容詞"}],
-    },
+    { id:"mlb-init-001", phrase:"Where does it hurt?", ipa:"/wɛr dʌz ɪt hɜːrt/", reading:"ウェア ダズ イット ハート？", meaning:"どこが痛みますか？", phrase_es:"¿Dónde le duele?", ipa_es:"/ˈdonde le ˈdwele/", category:"treatment", example:"Where does it hurt the most when I press here?", tags:["assessment","pain"], starred:false, words:[{w:"Where",r:"ウェア",m:"どこに",note:"疑問副詞"},{w:"does",r:"ダズ",m:"〜しますか",note:"助動詞"},{w:"hurt",r:"ハート",m:"痛む",note:"動詞"}], words_es:[{w:"Dónde",r:"",m:"どこに",note:"疑問副詞"},{w:"le",r:"",m:"あなたに",note:"間接目的語"},{w:"duele",r:"",m:"痛む",note:"動詞 doler 三人称単数"}]},
+    { id:"mlb-init-002", phrase:"Let me know if the pressure is too much.", ipa:"/lɛt miː noʊ ɪf ðə ˈprɛʃər ɪz tuː mʌtʃ/", reading:"レット ミー ノウ イフ ザ プレッシャー イズ トゥー マッチ", meaning:"圧が強すぎたら教えてください。", phrase_es:"Avíseme si la presión es demasiada.", ipa_es:"/aˈβiseme si la preˈsjon es demaˈsjada/", category:"treatment", example:"Relax your shoulder — let me know if the pressure is too much.", tags:["pressure","communication"], starred:true, words:[{w:"Let me know",r:"レット ミー ノウ",m:"教えてください",note:"慣用表現"},{w:"pressure",r:"プレッシャー",m:"圧力",note:"名詞"},{w:"too much",r:"トゥー マッチ",m:"強すぎる",note:"副詞句"}], words_es:[{w:"Avíseme",r:"",m:"教えてください",note:"avisarの命令形+間接目的語"},{w:"si",r:"",m:"もし〜なら",note:"接続詞"},{w:"presión",r:"",m:"圧力・プレッシャー",note:"名詞"},{w:"demasiada",r:"",m:"強すぎる",note:"形容詞"}]},
+    { id:"mlb-init-003", phrase:"Take a deep breath and relax.", ipa:"/teɪk ə diːp brɛθ ænd rɪˈlæks/", reading:"テイク ア ディープ ブレス アンド リラックス", meaning:"深呼吸してリラックスしてください。", phrase_es:"Respira profundo y relájate.", ipa_es:"/resˈpira proˈfundo i reˈlaxate/", category:"treatment", example:"Take a deep breath and relax your hamstring.", tags:["relaxation","breathing"], starred:false, words:[{w:"Take",r:"テイク",m:"する・とる",note:"動詞"},{w:"deep",r:"ディープ",m:"深い",note:"形容詞"},{w:"breath",r:"ブレス",m:"息",note:"名詞"},{w:"relax",r:"リラックス",m:"力を抜く",note:"動詞"}], words_es:[{w:"Respira",r:"",m:"呼吸する",note:"respirarの命令形"},{w:"profundo",r:"",m:"深く",note:"副詞"},{w:"relájate",r:"",m:"リラックスして",note:"relajarの再帰命令形"}]},
+    { id:"mlb-init-004", phrase:"How's the arm feeling today?", ipa:"/haʊz ðə ɑːrm ˈfiːlɪŋ təˈdeɪ/", reading:"ハウズ ザ アーム フィーリング トゥデイ？", meaning:"今日、腕の調子はどうですか？", phrase_es:"¿Cómo siente el brazo hoy?", ipa_es:"/ˈkomo ˈsjente el ˈbraθo oj/", category:"clubhouse", example:"Hey, how's the arm feeling today after yesterday's start?", tags:["check-in","arm"], starred:true, words:[{w:"How's",r:"ハウズ",m:"どんな状態ですか",note:"How is の短縮"},{w:"arm",r:"アーム",m:"腕",note:"名詞"},{w:"feeling",r:"フィーリング",m:"感じている",note:"進行形"},{w:"today",r:"トゥデイ",m:"今日は",note:"副詞"}], words_es:[{w:"Cómo",r:"",m:"どのように",note:"疑問副詞"},{w:"siente",r:"",m:"感じる",note:"sentirの三人称"},{w:"brazo",r:"",m:"腕",note:"名詞"},{w:"hoy",r:"",m:"今日",note:"副詞"}]},
+    { id:"mlb-init-005", phrase:"You're all set — go get 'em!", ipa:"/jʊər ɔːl sɛt — ɡoʊ ɡɛt əm/", reading:"ユーアー オール セット — ゴー ゲット エム！", meaning:"準備完了！頑張ってきてください！", phrase_es:"¡Estás listo — ve a por ellos!", ipa_es:"/esˈtas ˈlisto ˈbe a por ˈeʎos/", category:"game-day", example:"That's it for today's warmup. You're all set — go get 'em!", tags:["motivation","pre-game"], starred:false, words:[{w:"You're all set",r:"ユーアー オール セット",m:"準備完了です",note:"慣用表現"},{w:"go get 'em",r:"ゴー ゲット エム",m:"やっつけてこい！",note:"'em = them の口語"}], words_es:[{w:"Estás",r:"",m:"あなたは〜だ",note:"estar二人称"},{w:"listo",r:"",m:"準備完了",note:"形容詞"},{w:"ve",r:"",m:"行け",note:"ir の命令形"},{w:"ellos",r:"",m:"彼ら",note:"三人称複数"}]},
+    { id:"mlb-init-006", phrase:"Ice it for 20 minutes after the game.", ipa:"/aɪs ɪt fɔːr ˈtwɛnti ˈmɪnɪts ˈæftər ðə ɡeɪm/", reading:"アイス イット フォー 20 ミニッツ アフター ザ ゲーム", meaning:"試合後、20分間アイシングしてください。", phrase_es:"Aplica hielo por 20 minutos después del juego.", ipa_es:"/aˈplika ˈjelo por ˈbeinte miˈnutos desˈpwes del ˈxweɣo/", category:"recovery", example:"Great game! Ice it for 20 minutes after the game.", tags:["icing","recovery","post-game"], starred:false, words:[{w:"Ice",r:"アイス",m:"アイシングする",note:"動詞"},{w:"for 20 minutes",r:"フォー トゥエンティ ミニッツ",m:"20分間",note:"期間"},{w:"after the game",r:"アフター ザ ゲーム",m:"試合後に",note:"前置詞句"}], words_es:[{w:"Aplica",r:"",m:"適用する・当てる",note:"aplicarの命令形"},{w:"hielo",r:"",m:"氷",note:"名詞"},{w:"minutos",r:"",m:"分（時間）",note:"名詞複数"},{w:"después",r:"",m:"〜の後で",note:"副詞"},{w:"juego",r:"",m:"試合・ゲーム",note:"名詞"}]},
+    { id:"mlb-init-007", phrase:"I'll need to refer you to the team physician.", ipa:"/aɪl niːd tə rɪˈfɜːr juː tə ðə tiːm fɪˈzɪʃən/", reading:"アイル ニード トゥ リファー ユー トゥ ザ チーム フィジシャン", meaning:"チームドクターに診てもらう必要があります。", phrase_es:"Necesito referirle al médico del equipo.", ipa_es:"/neθeˈsito refeˈrirle al ˈmeðiko del eˈkipo/", category:"injury", example:"This looks beyond my scope — I'll need to refer you to the team physician.", tags:["referral","medical"], starred:true, words:[{w:"I'll",r:"アイル",m:"〜するつもりです",note:"I will の短縮"},{w:"need to",r:"ニード トゥ",m:"〜する必要がある"},{w:"refer A to B",r:"リファー",m:"AをBに紹介する",note:"医療動詞句"},{w:"team physician",r:"チーム フィジシャン",m:"チームドクター"}], words_es:[{w:"Necesito",r:"",m:"〜が必要です",note:"necesitar一人称"},{w:"referirle",r:"",m:"紹介する",note:"referir＋間接目的語"},{w:"médico",r:"",m:"医師・ドクター",note:"名詞"},{w:"equipo",r:"",m:"チーム",note:"名詞"}]},
+    { id:"mlb-init-008", phrase:"On a scale of 1 to 10, how's the pain?", ipa:"/ɒn ə skeɪl əv wʌn tə tɛn haʊz ðə peɪn/", reading:"オン ア スケール オブ ワン トゥ テン、ハウズ ザ ペイン？", meaning:"1〜10のスケールで痛みはどのくらいですか？", phrase_es:"En una escala del 1 al 10, ¿cuánto le duele?", ipa_es:"/en ˈuna esˈkala del ˈuno al ˈdjez ˈkwanto le ˈdwele/", category:"treatment", example:"On a scale of 1 to 10, how's the pain when you rotate your shoulder?", tags:["assessment","pain scale"], starred:false, words:[{w:"On a scale of 1 to 10",r:"オン ア スケール",m:"1〜10のスケールで",note:"評価の慣用表現"},{w:"how's",r:"ハウズ",m:"どのくらいですか"},{w:"pain",r:"ペイン",m:"痛み",note:"名詞"}], words_es:[{w:"escala",r:"",m:"スケール・尺度",note:"名詞"},{w:"cuánto",r:"",m:"どのくらい",note:"疑問副詞"},{w:"le",r:"",m:"あなたに",note:"間接目的語"},{w:"duele",r:"",m:"痛む",note:"動詞 doler 三人称"}]},
   ];
 
-  /* ── Speech ── */
+  /* ════════════════════════════════
+     Web Speech API — 多言語対応版
+  ════════════════════════════════ */
   const PREFERRED_VOICES_EN = ["Google US English","Samantha","Alex","Microsoft Aria Online (Natural) - English (United States)"];
   const PREFERRED_VOICES_ES = ["Google español","Google español de Estados Unidos","Monica","Juan","Paulina","Diego"];
 
@@ -656,14 +500,18 @@
     const loadVoice = useCallback(() => {
       const voices = window.speechSynthesis?.getVoices() || [];
       if (!voices.length) return;
+      // 英語ボイス
       let en = null;
       for (const n of PREFERRED_VOICES_EN) { en = voices.find(v => v.name === n); if (en) break; }
       if (!en) en = voices.find(v => v.lang?.startsWith("en-US")) || voices.find(v => v.lang?.startsWith("en")) || voices[0];
-      voiceRef.current = en; setVoiceName(en?.name || "");
+      voiceRef.current = en;
+      setVoiceName(en?.name || "");
+      // スペイン語ボイス
       let es = null;
       for (const n of PREFERRED_VOICES_ES) { es = voices.find(v => v.name === n); if (es) break; }
       if (!es) es = voices.find(v => v.lang?.startsWith("es-")) || voices.find(v => v.lang?.startsWith("es"));
-      voiceRefEs.current = es; setVoiceNameEs(es?.name || "");
+      voiceRefEs.current = es;
+      setVoiceNameEs(es?.name || "");
     }, []);
 
     useEffect(() => {
@@ -673,13 +521,16 @@
       return () => window.speechSynthesis.cancel();
     }, [loadVoice]);
 
+    /* speak(text, id, lang) — lang: "en-US" | "es-ES" */
     const speak = useCallback((text, id, lang = "en-US") => {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       if (speakingId === id) { setSpeakingId(null); return; }
       const utt  = new SpeechSynthesisUtterance(text);
       const isEs = lang.startsWith("es");
-      utt.lang   = lang; utt.rate = isEs ? 0.85 : 0.82; utt.pitch = 1; utt.volume = 1;
+      utt.lang   = lang;
+      utt.rate   = isEs ? 0.85 : 0.82;
+      utt.pitch  = 1; utt.volume = 1;
       const voice = isEs ? voiceRefEs.current : voiceRef.current;
       if (voice) utt.voice = voice;
       utt.onend  = () => setSpeakingId(null);
@@ -701,7 +552,12 @@
     );
   }
 
-  /* ── IPA fetch ── */
+  /* ════════════════════════════════
+     英語 IPA 自動生成
+     ・dictionaryapi.dev が全単語で失敗した場合は
+       フレーズそのもの（"/phrase/"）をフォールバックとして返す
+     ・絶対に空文字 "" を返さない
+  ════════════════════════════════ */
   async function fetchEnIpa(phrase) {
     try {
       const tokens = phrase.match(/[a-zA-Z]+/g) || [];
@@ -721,10 +577,62 @@
         } catch {}
       }));
       const parts = tokens.map(t => ipaMap[t.toLowerCase()]).filter(Boolean);
+      /* API で取れた IPA があればそれを使用、なければフレーズをそのままフォールバック */
       return parts.length ? "/" + parts.join(" ") + "/" : "/" + phrase + "/";
-    } catch { return "/" + phrase + "/"; }
+    } catch {
+      /* 予期しないエラーでもフォールバックを返す（絶対に "" にしない） */
+      return "/" + phrase + "/";
+    }
   }
 
+  /* ════════════════════════════════
+     共通翻訳関数
+     ① Google Translate 非公式 API（安定・高精度）
+     ② MyMemory API（フォールバック）
+  ════════════════════════════════ */
+  async function translateText(text, from, to) {
+    /* ── 方法1: Google Translate gtx endpoint ── */
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        /* レスポンス形式: [[[翻訳チャンク, 原文チャンク,...], ...], ...] */
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          const translated = data[0]
+            .map(chunk => (Array.isArray(chunk) ? chunk[0] : ""))
+            .filter(Boolean)
+            .join("");
+          if (translated && translated !== text) return translated;
+        }
+      }
+    } catch { /* Google が失敗したら MyMemory へ */ }
+
+    /* ── 方法2: MyMemory API（フォールバック）── */
+    /* langpair の "|" は必ず %7C にエンコードする */
+    const url2 = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}%7C${to}`;
+    const res2  = await fetch(url2);
+    const json  = await res2.json();
+    /* responseStatus は数値・文字列どちらでも対応 */
+    if (Number(json.responseStatus) === 200) {
+      const t = json.responseData?.translatedText || "";
+      /* 「QUERY LENGTH LIMIT EXCEEDED」など無効な値を弾く */
+      if (t && t !== text && !/^QUERY|^MYMEMORY|^\[/i.test(t)) return t;
+    }
+    throw new Error(`Translation ${from}→${to} failed`);
+  }
+
+  /* スペイン語翻訳（後方互換のためラッパーを残す） */
+  async function fetchEsTranslation(enText) {
+    return translateText(enText, "en", "es");
+  }
+
+  /* ════════════════════════════════
+     スペイン語 IPA（ベストエフォート）
+     ・スペイン語は発音が規則的なため、英語より精度は低くなる場合があります
+     ・dictionaryapi.dev が失敗した場合はフレーズそのままをフォールバック
+     ・絶対に空文字 "" を返さない
+  ════════════════════════════════ */
   async function fetchEsIpa(phrase) {
     try {
       const tokens = phrase.match(/[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]+/gi) || [];
@@ -745,135 +653,194 @@
       }));
       const parts = tokens.map(t => ipaMap[t.toLowerCase()]).filter(Boolean);
       return parts.length ? "/" + parts.join(" ") + "/" : "/" + phrase + "/";
-    } catch { return "/" + phrase + "/"; }
-  }
-
-  /* ── Translation ── */
-  async function translateText(text, from, to) {
-    try {
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && Array.isArray(data[0])) {
-          const translated = data[0].map(chunk => (Array.isArray(chunk) ? chunk[0] : "")).filter(Boolean).join("");
-          if (translated && translated !== text) return translated;
-        }
-      }
-    } catch {}
-    const url2 = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}%7C${to}`;
-    const res2  = await fetch(url2);
-    const json  = await res2.json();
-    if (Number(json.responseStatus) === 200) {
-      const t = json.responseData?.translatedText || "";
-      if (t && t !== text && !/^QUERY|^MYMEMORY|^\[/i.test(t)) return t;
+    } catch {
+      return "/" + phrase + "/";
     }
-    throw new Error(`Translation ${from}→${to} failed`);
   }
 
-  /* ── Word Breakdown ── */
+  /* ════════════════════════════════
+     単語解説 自動生成 共通ユーティリティ
+     ・フレーズをトークン分割
+     ・改行区切りバッチ翻訳（API 1回のみ）
+     ・{w, r, m, note} 配列を返す
+     ・API 失敗時はスペース分割フォールバック（絶対に空配列を返さない）
+  ════════════════════════════════ */
   async function fetchWordBreakdown(phrase, fromLang, toLang, tokenPattern) {
     if (!phrase) return [];
+
+    /* トークン抽出（フォールバック用にも使用） */
     const rawTokens = phrase.match(tokenPattern) || [];
     if (!rawTokens.length) return [];
-    const seen = new Set(); const unique = [];
-    for (const t of rawTokens) { const k = t.toLowerCase(); if (!seen.has(k)) { seen.add(k); unique.push(t); } }
+
+    /* 重複除去（元の出現順を保持） */
+    const seen = new Set();
+    const unique = [];
+    for (const t of rawTokens) {
+      const k = t.toLowerCase();
+      if (!seen.has(k)) { seen.add(k); unique.push(t); }
+    }
+
+    /* ── フォールバック: 翻訳なし・スペルのみ（意味は空）──
+       API が完全に失敗しても「単語のスペル」は必ず保存される */
     const fallback = unique.slice(0, 14).map(w => ({ w, r: "", m: "", note: "" }));
+
     try {
+      /* 改行区切りバッチ翻訳（toLang）: API コール 1回 */
       const transMap = {};
       const batch  = unique.slice(0, 14).join("\n");
       const result = await translateText(batch, fromLang, toLang);
-      result.split("\n").forEach((line, i) => { if (unique[i] && line.trim()) transMap[unique[i].toLowerCase()] = line.trim(); });
+      result.split("\n").forEach((line, i) => {
+        if (unique[i] && line.trim()) transMap[unique[i].toLowerCase()] = line.trim();
+      });
+
+      /* 元フレーズの出現順で構築（意味が取れた単語のみ） */
       const built = new Set();
-      const translated = rawTokens.filter(t => { const k = t.toLowerCase(); if (built.has(k)) return false; built.add(k); return !!transMap[k]; }).slice(0, 14).map(w => ({ w, r: "", m: transMap[w.toLowerCase()] || "", note: "" }));
+      const translated = rawTokens
+        .filter(t => {
+          const k = t.toLowerCase();
+          if (built.has(k)) return false;
+          built.add(k);
+          return !!transMap[k];
+        })
+        .slice(0, 14)
+        .map(w => ({ w, r: "", m: transMap[w.toLowerCase()] || "", note: "" }));
+
+      /* 翻訳結果があればそれを使用、なければスペル only フォールバック */
       return translated.length > 0 ? translated : fallback;
-    } catch { return fallback; }
+    } catch {
+      /* API 完全失敗 → スペルのみフォールバック（空配列は絶対に返さない） */
+      return fallback;
+    }
   }
 
-  async function fetchEnWords(phrase) { return fetchWordBreakdown(phrase, "en", "ja", /[a-zA-Z']+/g); }
-  async function fetchEsWords(phrase) { return fetchWordBreakdown(phrase, "es", "ja", /[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]+/gi); }
+  /* 英語 単語解説 自動生成 (EN → JA) */
+  async function fetchEnWords(enPhrase) {
+    return fetchWordBreakdown(enPhrase, "en", "ja", /[a-zA-Z']+/g);
+  }
 
-  /* ── OpenAI ── */
+  /* スペイン語 単語解説 自動生成 (ES → JA) */
+  async function fetchEsWords(esPhrase) {
+    return fetchWordBreakdown(esPhrase, "es", "ja", /[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]+/gi);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     OpenAI GPT-4o-mini 一撃パース
+     ─────────────────────────────────────────────────────────
+     日本語テキストを1回のリクエストで
+     EN翻訳・EN IPA・ES翻訳・ES IPA・EN単語解説・ES単語解説
+     すべてJSON形式で返す。
+  ════════════════════════════════════════════════════════════ */
   async function openAIEnrich(jaText) {
     const apiKey = (localStorage.getItem("openai_api_key") || "").trim();
     if (!apiKey) throw new Error("no_key");
 
     const prompt =
-`You are a elite bilingual baseball language coach embedded in the dugout and clubhouse of a Major League Baseball team.
-Your role is to translate Japanese phrases into authentic, high-energy English and Spanish as used by MLB players, coaches, and managers on the field, in the dugout, and in the clubhouse.
+`You are a language assistant for a Japanese MLB massage therapist.
+Given the Japanese phrase below, output a JSON object with EXACTLY these 6 keys.
+ALL 6 keys are required — never omit any of them.
 
-Your English output must capture the real voice of the American clubhouse: direct, competitive, fired-up, using genuine baseball slang and terminology (e.g., "tunnel your pitches", "get ahead in the count", "attack the zone", "battle", "grind", "lock in", "let's ride", "here we go", "play up").
-
-Your Spanish output must reflect the authentic voice of Latin players (Dominican, Venezuelan, Mexican, Cuban) — using natural, passionate baseball Spanish with real clubhouse energy (e.g., "¡arriba!", "vamos", "dale", "tú puedes", "a darle", "eso es", "qué batazo", "en cuenta").
-
-Given the Japanese phrase, output a JSON object with EXACTLY these 6 keys:
 {
-  "en":       "Premium English — authentic MLB dugout/clubhouse expression",
-  "ipa":      "/IPA transcription of the English phrase/",
-  "es":       "Premium Spanish — authentic Latin ballplayer expression with real passion",
-  "ipa_es":   "/IPA transcription of the Spanish phrase/",
-  "words":    [{"w":"EnglishWord","m":"日本語の意味","r":"","note":"品詞・野球用語メモ（日本語）"}],
-  "words_es": [{"w":"PalabraES","m":"日本語の意味","r":"","note":"品詞・野球用語メモ（日本語）"}]
+  "en":       "Natural English translation for a sports medical setting",
+  "ipa":      "/IPA transcription of the English phrase, e.g. /wɛr dʌz ɪt hɜːrt//",
+  "es":       "Natural Spanish translation for a sports medical setting",
+  "ipa_es":   "/IPA transcription of the Spanish phrase, e.g. /ˈdonde le ˈdwele//",
+  "words":    [{"w":"EnglishWord","m":"日本語の意味","r":"","note":"品詞メモ"}],
+  "words_es": [{"w":"PalabraES","m":"日本語の意味","r":"","note":"品詞メモ"}]
 }
 
-RULES:
-1. "ipa" — REQUIRED. IPA for the English. Wrap in /slashes/.
-2. "ipa_es" — REQUIRED. IPA for the Spanish. Wrap in /slashes/. NEVER omit.
-3. words / words_es: 3–8 key baseball vocabulary items. note field in Japanese.
-4. r field: always "".
-5. Prioritize real baseball terminology, slang, and situational expressions over generic translations.
-6. For motivational/hype phrases, make them electric and game-ready.
+IMPORTANT RULES:
+1. "ipa"    — REQUIRED. IPA for the English phrase. Wrap in /slashes/.
+2. "ipa_es" — REQUIRED. IPA for the Spanish phrase. Wrap in /slashes/. DO NOT omit this field.
+3. words / words_es: 3–8 key vocabulary items. note in Japanese (動詞・名詞・形容詞・慣用表現 etc.)
+4. r field: always ""
 
 Japanese input: "${jaText}"`;
 
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      headers: {
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        max_tokens: 1400,
-        response_format: { type: "json_object" },
+        model:           "gpt-4o-mini",
+        messages:        [{ role: "user", content: prompt }],
+        temperature:     0.2,
+        max_tokens:      1400,
+        response_format: { type: "json_object" },  // JSON出力を強制
       }),
     });
 
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
-      throw new Error(`OpenAI: ${errBody.error?.message || `HTTP ${res.status}`}`);
+      const msg = errBody.error?.message || `HTTP ${res.status}`;
+      throw new Error(`OpenAI: ${msg}`);
     }
+
     const data    = await res.json();
     const content = data.choices?.[0]?.message?.content || "";
+    /* response_format:json_object でも念のためコードブロックを除去 */
     const jsonStr = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed  = JSON.parse(jsonStr);
-    if (!parsed.ipa_es && parsed.es) { parsed.ipa_es = "/" + parsed.es + "/"; }
+
+    /* ipa_es が欠落していた場合の最終フォールバック */
+    if (!parsed.ipa_es && parsed.es) {
+      parsed.ipa_es = "/" + parsed.es + "/";
+      console.warn("[openAIEnrich] ipa_es missing from GPT response → fallback applied");
+    }
+
+    console.log("[openAIEnrich] response:", parsed); // デバッグ用
     return parsed;
   }
 
-  /* ── Translate Panel ── */
+  /* ════════════════════════════════════════════════════════════
+     翻訳パネル（クリーン再設計版）
+     ─────────────────────────────────────────────────────────
+     【設計方針】
+     ・表示用（JA→EN→ES テキスト）は自動翻訳で随時更新。
+     ・IPA・単語解説は「保存ボタンを押した瞬間」に1本の
+       async 関数で順番に取得する。事前生成は一切しない。
+     ・各ステップは必ず try/catch で囲み、失敗時は
+       その場でフォールバック値を確定させてから次へ進む。
+     ・全データが揃ったら onSaveRequest を1回だけ呼ぶ。
+  ════════════════════════════════════════════════════════════ */
   function TranslatePanel({ onSaveRequest, speakingId, speak }) {
+    // ── 表示用ステート（最小限）──
     const [jaText,   setJaText]   = useState("");
     const [enText,   setEnText]   = useState("");
-    const [enStatus, setEnStatus] = useState("idle");
+    const [enStatus, setEnStatus] = useState("idle"); // idle|loading|done|error
     const [esText,   setEsText]   = useState("");
     const [esStatus, setEsStatus] = useState("idle");
     const [errMsg,   setErrMsg]   = useState("");
+    // ── 保存中の進捗表示 ──
     const [saving,   setSaving]   = useState(false);
-    const [saveStep, setSaveStep] = useState("");
+    const [saveStep, setSaveStep] = useState("");     // "① IPA取得中..." など
     const timerRef = useRef(null);
 
+    /* ─────────────────────────────────────
+       JA → EN 自動翻訳（表示用・700ms デバウンス）
+    ───────────────────────────────────── */
     useEffect(() => {
       const q = jaText.trim();
-      if (!q) { setEnText(""); setEnStatus("idle"); setEsText(""); setEsStatus("idle"); setErrMsg(""); return; }
+      if (!q) {
+        setEnText(""); setEnStatus("idle");
+        setEsText(""); setEsStatus("idle"); setErrMsg("");
+        return;
+      }
       setEnStatus("loading"); setEsText(""); setEsStatus("idle");
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(async () => {
         try {
           const en = await translateText(q, "ja", "en");
           setEnText(en); setEnStatus("done");
-          setEsStatus("loading");
-          try { const es = await translateText(en, "en", "es"); setEsText(es); setEsStatus("done"); }
-          catch { setEsStatus("error"); }
+          // EN 成功後に ES も表示用で取得
+          if (HAS_ES) {
+            setEsStatus("loading");
+            try {
+              const es = await translateText(en, "en", "es");
+              setEsText(es); setEsStatus("done");
+            } catch { setEsStatus("error"); }
+          }
         } catch {
           setErrMsg("翻訳に失敗しました。ネットワーク接続を確認してください。");
           setEnStatus("error");
@@ -882,159 +849,362 @@ Japanese input: "${jaText}"`;
       return () => clearTimeout(timerRef.current);
     }, [jaText]);
 
+    /* ─────────────────────────────────────
+       保存ボタン押下 → 全データを順番に取得して1回保存
+       ① EN IPA  ② ES IPA  ③ EN 単語解説  ④ ES 単語解説  ⑤ upsert
+       各ステップは try/catch で独立。失敗 = フォールバック確定。
+    ───────────────────────────────────── */
     const handleSave = async () => {
       if (!jaText.trim() || saving) return;
       setSaving(true);
+
       const apiKey = (localStorage.getItem("openai_api_key") || "").trim();
+
       try {
+        /* ══════════════════════════════════════════════
+           【経路A】OpenAI API キーあり → 一撃パース
+           1回のリクエストで全フィールドを取得する
+        ══════════════════════════════════════════════ */
         if (apiKey) {
-          setSaveStep("⚾ GPT-4o-mini で生成中...");
+          setSaveStep("🤖 GPT-4o-mini で生成中...");
           try {
             const r = await openAIEnrich(jaText.trim());
+
+            /* GPT レスポンスをフォールバック付きで正規化 */
             const en      = (r.en      || "").trim() || enText || jaText.trim();
             const es      = (r.es      || "").trim();
             const ipa     = (r.ipa     || "").trim() || "/" + en + "/";
             const ipa_es  = (r.ipa_es  || "").trim() || (es ? "/" + es + "/" : "");
-            const words   = (Array.isArray(r.words)    && r.words.length    > 0) ? r.words    : en.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
-            const words_es = (Array.isArray(r.words_es) && r.words_es.length > 0) ? r.words_es : es.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
+            const words   = (Array.isArray(r.words)    && r.words.length    > 0)
+              ? r.words
+              : en.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
+            const words_es = (Array.isArray(r.words_es) && r.words_es.length > 0)
+              ? r.words_es
+              : es.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
+
             setSaveStep("💾 保存中...");
             onSaveRequest({ ja: jaText.trim(), en, ipa, words, es, ipa_es, words_es });
-            return;
+            return; /* 成功 → フォールバックへ進まない */
+
           } catch (e) {
+            /* OpenAI が失敗した場合のみフォールバックへ */
             const msg = e.message === "no_key" ? "APIキー未設定" : e.message;
             console.warn("[OpenAI] failed:", msg, "→ fallback");
             setSaveStep(`⚠ GPT エラー (${msg})。別の方法で保存します...`);
-            await new Promise(r => setTimeout(r, 900));
+            await new Promise(r => setTimeout(r, 900)); // エラーメッセージを一瞬表示
           }
         }
+
+        /* ══════════════════════════════════════════════
+           【経路B】APIキーなし or OpenAI失敗
+           → 既存の翻訳API + スペース分割フォールバック
+        ══════════════════════════════════════════════ */
+        /* EN テキストが表示されていなければ翻訳から実行 */
         let en = enText || "";
-        if (!en) { setSaveStep("🇺🇸 英語に翻訳中..."); try { en = await translateText(jaText.trim(), "ja", "en"); } catch { en = jaText.trim(); } }
+        if (!en) {
+          setSaveStep("🇺🇸 英語に翻訳中...");
+          try { en = await translateText(jaText.trim(), "ja", "en"); } catch {
+            en = jaText.trim(); /* 翻訳も失敗したら原文で代用 */
+          }
+        }
+
         let es = esText || "";
-        if (!es) { setSaveStep("🇪🇸 スペイン語に翻訳中..."); try { es = await translateText(en, "en", "es"); } catch {} }
+        if (!es && HAS_ES) {
+          setSaveStep("🇪🇸 スペイン語に翻訳中...");
+          try { es = await translateText(en, "en", "es"); } catch {}
+        }
+
         setSaveStep("① 🇺🇸 IPA 取得中...");
         let ipa = "/" + en + "/";
         try { const v = await fetchEnIpa(en); if (v) ipa = v; } catch {}
+
         setSaveStep("② 🇪🇸 IPA 取得中...");
         let ipa_es = es ? "/" + es + "/" : "";
         if (es) { try { const v = await fetchEsIpa(es); if (v) ipa_es = v; } catch {} }
+
         setSaveStep("③ 🇺🇸 単語解説 生成中...");
         let words = en.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
         try { const v = await fetchEnWords(en); if (v && v.length > 0) words = v; } catch {}
+
         setSaveStep("④ 🇪🇸 単語解説 生成中...");
         let words_es = es.split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
         if (es) { try { const v = await fetchEsWords(es); if (v && v.length > 0) words_es = v; } catch {} }
+
         setSaveStep("💾 保存中...");
         onSaveRequest({ ja: jaText.trim(), en, ipa, words, es, ipa_es, words_es });
-      } catch (e) { console.warn("[handleSave] unexpected error:", e); }
-      finally { setSaving(false); setSaveStep(""); }
+
+      } catch (e) {
+        console.warn("[handleSave] unexpected error:", e);
+      } finally {
+        setSaving(false);
+        setSaveStep("");
+      }
     };
 
-    const clear = () => { setJaText(""); setEnText(""); setEnStatus("idle"); setEsText(""); setEsStatus("idle"); setErrMsg(""); window.speechSynthesis?.cancel(); };
+    const clear = () => {
+      setJaText(""); setEnText(""); setEnStatus("idle");
+      setEsText(""); setEsStatus("idle"); setErrMsg("");
+      window.speechSynthesis?.cancel();
+    };
+
+    // EN が翻訳済みで、かつ保存処理中でなければ保存可能
     const canSave = enStatus === "done" && !saving;
+
+    /* API モードバッジ（レンダリング時にキーを確認） */
     const hasApiKey = !!(localStorage.getItem("openai_api_key") || "").trim();
 
     return (
       <div className="translate-panel">
         <div className="translate-panel-header">
-          <div className="translate-panel-header-icon">⚾</div>
-          <div className="translate-panel-title">Clubhouse Translator</div>
-          <div className="translate-panel-subtitle">
-            {hasApiKey ? "GPT-4o-mini 強化" : "JA → EN → ES"}
-          </div>
+          <div className="translate-panel-header-icon">🌐</div>
+          <span className="translate-panel-title">日本語 → 英語・スペイン語 自動翻訳</span>
+          <span className="translate-panel-subtitle" style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+            {hasApiKey
+              ? <span className="api-mode-badge openai">🤖 GPT-4o-mini</span>
+              : <span className="api-mode-badge fallback">⚙ APIキー未設定</span>
+            }
+          </span>
         </div>
         <div className="translate-body">
+          {/* ── 日本語入力 ── */}
           <div className="translate-src">
-            <div className="translate-lang-label">🇯🇵 日本語</div>
+            <span className="translate-lang-label">🇯🇵 日本語</span>
             <textarea
               className="translate-textarea"
+              placeholder={"日本語で入力してください\n例：どこが一番痛みますか？\n　　肩の力を抜いてください\n　　試合後は20分アイシングしてね"}
               value={jaText}
               onChange={e => setJaText(e.target.value)}
-              placeholder="例：初球からストライクゾーンを攻めろ"
-              rows={4}
-              maxLength={300}
+              rows={6}
             />
             <div className="translate-src-footer">
-              <button className="translate-clear" onClick={clear} type="button">クリア</button>
-              <span className="char-count">{jaText.length}/300</span>
+              {jaText && <button className="translate-clear" onClick={clear}>✕ クリア</button>}
+              <span className="char-count" style={{marginLeft:"auto"}}>{jaText.length} 字</span>
             </div>
           </div>
-          <div className="translate-divider"><div className="translate-arrow-icon">→</div></div>
+
+          {/* ── 区切り ── */}
+          <div className="translate-divider">
+            <div className="translate-arrow-icon">→</div>
+          </div>
+
+          {/* ── 翻訳結果: EN + ES ── */}
           <div className="translate-dst">
-            <div className="lang-block">
-              <div className="lang-flag-label en">🇺🇸 English</div>
-              {enStatus === "idle" && <div className="translate-result-text placeholder">ここに英語訳が表示されます</div>}
-              {enStatus === "loading" && <div className="translate-result-text loading"><span className="spinner-sm"></span>翻訳中...</div>}
-              {enStatus === "error" && <div className="translate-result-text error">{errMsg}</div>}
-              {enStatus === "done" && <div className="translate-result-text">{enText}</div>}
-              <div className="lang-speak-row">
-                <button className={`speak-big-btn${speakingId==="translate-en"?" speaking":""}`} onClick={() => speak(enText, "translate-en", "en-US")} disabled={!enText} type="button">
-                  <SpeakerIcon speaking={speakingId==="translate-en"}/> 聞く
-                </button>
+            {/* 🇺🇸 English */}
+            {HAS_EN && (
+              <div className="lang-block">
+                <span className="lang-flag-label en">🇺🇸 English</span>
+                {enStatus === "idle"    && <p className="translate-result-text placeholder">日本語を入力すると英語が表示されます</p>}
+                {enStatus === "loading" && <p className="translate-result-text loading"><span className="spinner"/>翻訳中...</p>}
+                {enStatus === "done"    && <p className="translate-result-text">{enText}</p>}
+                {enStatus === "error"   && <p className="translate-result-text error">⚠ {errMsg}</p>}
+                {enStatus === "done" && (
+                  <div className="lang-speak-row">
+                    <button className={`speak-big-btn${speakingId === "tr-en" ? " speaking" : ""}`}
+                      onClick={() => speak(enText, "tr-en", "en-US")}>
+                      <SpeakerIcon size={14} speaking={speakingId === "tr-en"}/>
+                      {speakingId === "tr-en" ? "再生中..." : "🇺🇸 読み上げ"}
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="lang-block lang-block-es">
-              <div className="lang-flag-label es">🇪🇸 Español</div>
-              {esStatus === "idle" && <div className="translate-result-text placeholder">ここにスペイン語訳が表示されます</div>}
-              {esStatus === "loading" && <div className="translate-result-text loading"><span className="spinner-sm"></span>翻訳中...</div>}
-              {esStatus === "error" && <div className="translate-result-text error">スペイン語翻訳に失敗しました</div>}
-              {esStatus === "done" && <div className="translate-result-text es-text">{esText}</div>}
-              <div className="lang-speak-row">
-                <button className={`speak-big-btn es-btn${speakingId==="translate-es"?" speaking":""}`} onClick={() => speak(esText, "translate-es", "es-ES")} disabled={!esText} type="button">
-                  <SpeakerIcon speaking={speakingId==="translate-es"}/> Escuchar
-                </button>
+            )}
+
+            {/* 🇪🇸 Español */}
+            {HAS_ES && (
+              <div className="lang-block lang-block-es">
+                <span className="lang-flag-label es">🇪🇸 Español</span>
+                {esStatus === "idle"    && <p className="translate-result-text placeholder">英語翻訳後に自動でスペイン語を生成します</p>}
+                {esStatus === "loading" && <p className="translate-result-text loading"><span className="spinner"/>スペイン語に翻訳中...</p>}
+                {esStatus === "done"    && <p className="translate-result-text es-text">{esText}</p>}
+                {esStatus === "error"   && <p className="translate-result-text error">⚠ スペイン語翻訳に失敗しました（保存時に再試行します）</p>}
+                {esStatus === "done" && (
+                  <div className="lang-speak-row">
+                    <button className={`speak-big-btn es-btn${speakingId === "tr-es" ? " speaking" : ""}`}
+                      onClick={() => speak(esText, "tr-es", "es-ES")}>
+                      <SpeakerIcon size={14} speaking={speakingId === "tr-es"}/>
+                      {speakingId === "tr-es" ? "再生中..." : "🇪🇸 読み上げ"}
+                    </button>
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* 保存ボタン（保存中は進捗メッセージを表示） */}
+            <div className="translate-save-row">
+              {saving
+                ? <span style={{fontSize:".8rem",color:"var(--gray-600)",display:"flex",alignItems:"center",gap:8}}>
+                    <span className="spinner-sm"/>{saveStep}
+                  </span>
+                : <button className="save-translate-btn" disabled={!canSave} onClick={handleSave}>
+                    ＋ フレーズ帳に保存（EN + ES）
+                  </button>
+              }
             </div>
           </div>
-        </div>
-        <div className="translate-save-row">
-          <button className="save-translate-btn" onClick={handleSave} disabled={!jaText.trim() || saving} type="button">
-            {saving ? <><span className="spinner-sm"></span>{saveStep || "保存中..."}</> : <>＋ 単語帳に保存</>}
-          </button>
         </div>
       </div>
     );
   }
 
-  /* ── Settings Modal ── */
+  /* ════════════════════════════════
+     設定モーダル（OpenAI API キー管理）
+  ════════════════════════════════ */
   function SettingsModal({ onClose }) {
-    const [key, setKey] = useState(localStorage.getItem("openai_api_key") || "");
-    const save = (e) => {
-      e.preventDefault();
-      localStorage.setItem("openai_api_key", key.trim());
-      onClose();
+    const [key,     setKey]     = useState(() => localStorage.getItem("openai_api_key") || "");
+    const [saved,   setSaved]   = useState(false);
+    const [testing, setTesting] = useState(false);
+    const [testMsg, setTestMsg] = useState("");
+
+    const saveKey = () => {
+      const trimmed = key.trim();
+      if (trimmed) {
+        localStorage.setItem("openai_api_key", trimmed);
+      } else {
+        localStorage.removeItem("openai_api_key");
+      }
+      setSaved(true);
+      setTestMsg("");
+      setTimeout(() => setSaved(false), 2500);
     };
-    const clear = () => {
+
+    const clearKey = () => {
       localStorage.removeItem("openai_api_key");
-      setKey("");
+      setKey(""); setSaved(false); setTestMsg("");
     };
+
+    /* APIキーが有効かどうかを軽量なリクエストで確認 */
+    const testKey = async () => {
+      const k = key.trim();
+      if (!k) { setTestMsg("❌ キーが空です"); return; }
+      setTesting(true); setTestMsg("接続テスト中...");
+      try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${k}` },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: "Reply with just: OK" }],
+            max_tokens: 5,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setTestMsg("✅ 接続成功！GPT-4o-mini が使用できます");
+        } else {
+          setTestMsg(`❌ エラー: ${data.error?.message || `HTTP ${res.status}`}`);
+        }
+      } catch (e) {
+        setTestMsg(`❌ ネットワークエラー: ${e.message}`);
+      } finally {
+        setTesting(false);
+      }
+    };
+
+    const masked = key.length > 10
+      ? key.slice(0, 7) + "•".repeat(Math.min(key.length - 10, 20)) + key.slice(-4)
+      : key;
+
     return (
       <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="modal modal-sm">
           <div className="modal-header">
-            <h2>⚙️ API設定</h2>
+            <h2>⚙️ 設定</h2>
             <button className="modal-close" onClick={onClose}>✕</button>
           </div>
-          <form onSubmit={save}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label>OpenAI API キー</label>
+              <input
+                type="password"
+                className={`form-control settings-key-input`}
+                value={key}
+                onChange={e => { setKey(e.target.value); setSaved(false); setTestMsg(""); }}
+                placeholder="sk-..."
+                autoComplete="off"
+              />
+              {key.length > 10 && (
+                <p style={{fontSize:".72rem",color:"var(--gray-400)",marginTop:3}}>
+                  {masked}
+                </p>
+              )}
+              <p className="settings-note">
+                入力したキーは <strong>ブラウザの localStorage のみ</strong> に保存されます。<br/>
+                GitHub やサーバーには一切送信されません。<br/>
+                キーを設定すると保存時に <strong style={{color:"#10a37f"}}>GPT-4o-mini</strong> が使われ、
+                翻訳・IPA・単語解説を高精度で一括生成します。
+              </p>
+              {testMsg && (
+                <p style={{
+                  fontSize:".8rem", marginTop:8, padding:"6px 10px",
+                  borderRadius:6,
+                  background: testMsg.startsWith("✅") ? "#e8f5e9" : testMsg.startsWith("❌") ? "#fdecea" : "#f5f5f5",
+                  color: testMsg.startsWith("✅") ? "#2e7d32" : testMsg.startsWith("❌") ? "#c62828" : "var(--gray-600)",
+                }}>
+                  {testMsg}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="modal-footer" style={{flexWrap:"wrap",gap:8}}>
+            {key && <button className="btn-cancel" style={{color:"#c8102e",borderColor:"#f5b8c0"}} onClick={clearKey}>🗑 削除</button>}
+            <button className="btn-cancel" onClick={testKey} disabled={testing || !key.trim()}
+              style={{borderColor:"var(--navy-light)",color:"var(--navy)"}}>
+              {testing ? "テスト中..." : "🔌 接続テスト"}
+            </button>
+            <button className="btn-cancel" onClick={onClose}>閉じる</button>
+            <button className="btn-save" onClick={saveKey}>
+              {saved ? "✓ 保存済み！" : "保存"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ════════════════════════════════
+     グループ追加モーダル
+  ════════════════════════════════ */
+  function AddCategoryModal({ onAdd, onClose, usedIdxs }) {
+    const [label, setLabel] = useState("");
+    const [emoji, setEmoji] = useState("");
+    const [paletteIdx, setPaletteIdx] = useState(() => {
+      for (let i = 0; i < PALETTE.length; i++) { if (!usedIdxs.includes(i)) return i; }
+      return 0;
+    });
+    const submit = (e) => {
+      e.preventDefault();
+      const name = (emoji ? emoji + " " : "") + label.trim();
+      if (!name) return;
+      onAdd({ key: APP_ID + "-custom-" + Date.now(), label: name, paletteIdx, builtIn: false });
+      onClose();
+    };
+    return (
+      <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="modal modal-sm">
+          <div className="modal-header"><h2>グループを追加</h2><button className="modal-close" onClick={onClose}>✕</button></div>
+          <form onSubmit={submit}>
             <div className="modal-body">
               <div className="form-group">
-                <label>OpenAI API Key</label>
-                <input
-                  className="form-control settings-key-input"
-                  type="password"
-                  value={key}
-                  onChange={e => setKey(e.target.value)}
-                  placeholder="sk-..."
-                />
-                <p className="settings-note">
-                  <strong>設定すると保存時にGPT-4o-miniでMLB風の自然な英語・スペイン語・単語解説を生成します。</strong><br/>
-                  APIキーはこの端末のlocalStorageにのみ保存されます。未設定でも無料翻訳APIで動作します。
-                </p>
+                <label>絵文字（任意）</label>
+                <input className="form-control" value={emoji} onChange={e => setEmoji(e.target.value)} placeholder="例: 💪 🧴 🏃" maxLength={4} style={{width:80}} />
+              </div>
+              <div className="form-group">
+                <label>グループ名 *</label>
+                <input className="form-control" value={label} onChange={e => setLabel(e.target.value)} placeholder="例: ストレッチ、投手ケア" required autoFocus />
+              </div>
+              <div className="form-group">
+                <label>カラー</label>
+                <div className="color-swatch-row">
+                  {PALETTE.map((p, i) => (
+                    <div key={i} className={`color-swatch${paletteIdx === i ? " selected" : ""}`}
+                      style={{ background: p.border }} onClick={() => setPaletteIdx(i)} title={`カラー ${i+1}`} />
+                  ))}
+                </div>
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn-cancel" onClick={clear}>キー削除</button>
               <button type="button" className="btn-cancel" onClick={onClose}>キャンセル</button>
-              <button type="submit" className="btn-save">保存</button>
+              <button type="submit" className="btn-save">追加</button>
             </div>
           </form>
         </div>
@@ -1042,7 +1212,11 @@ Japanese input: "${jaText}"`;
     );
   }
 
-  function WordBreakdown({ words, speakingId, speak, phraseId, lang = "en-US" }) {
+  /* ════════════════════════════════
+     単語チップ
+  ════════════════════════════════ */
+  /* lang: "en-US" | "es-ES" */
+  function WordChips({ words, speakingId, speak, phraseId, lang = "en-US" }) {
     const isEs = lang.startsWith("es");
     return (
       <div className="word-breakdown">
@@ -1064,52 +1238,84 @@ Japanese input: "${jaText}"`;
     );
   }
 
-  /* ── Phrase Modal ── */
+  /* ════════════════════════════════
+     フレーズ追加・編集モーダル
+  ════════════════════════════════ */
   function PhraseModal({ phrase, onSave, onClose, categories }) {
-    const blank = { phrase:"", ipa:"", reading:"", meaning:"", phrase_es:"", ipa_es:"", words_es:[], category: categories[0]?.key || "pitching", example:"", tags:[], starred:false, words:[] };
+    const blank = { phrase:"", ipa:"", reading:"", meaning:"", phrase_es:"", ipa_es:"", words_es:[], category: categories[0]?.key || "treatment", example:"", tags:[], starred:false, words:[] };
     const initForm = () => {
       if (!phrase) return blank;
       const tags = Array.isArray(phrase.tags) ? phrase.tags.join(", ") : (phrase.tags || "");
-      return { ...blank, ...phrase, category: phrase.category || categories[0]?.key || "pitching", tags };
+      return { ...blank, ...phrase, tags };
     };
     const [form, setForm] = useState(initForm);
-
-    useEffect(() => {
-      const exists = (categories || []).some(c => c.key === form.category);
-      if (!exists && categories && categories.length > 0) {
-        setForm(f => ({ ...f, category: categories[0].key }));
-      }
-    }, [categories]);
-
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
     const submit = (e) => {
       e.preventDefault();
-      const safeCategory = ((categories || []).some(c => c.key === form.category) ? form.category : categories[0]?.key) || "pitching";
-      onSave({ ...form, category: safeCategory });
+      if (!form.phrase.trim()) return;
+      onSave({ ...form, tags: typeof form.tags === "string" ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : form.tags });
     };
+
     return (
       <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="modal">
           <div className="modal-header">
-            <h2>{phrase ? "✏️ フレーズ編集" : "⚾ フレーズ追加"}</h2>
+            <h2>{phrase?.id ? "フレーズを編集" : "フレーズを追加"}</h2>
             <button className="modal-close" onClick={onClose}>✕</button>
           </div>
           <form onSubmit={submit}>
             <div className="modal-body">
+              {/* 🇺🇸 English */}
               <div className="form-section-label en">🇺🇸 English</div>
-              <div className="form-group"><label>英語フレーズ *</label><input className="form-control" value={form.phrase} onChange={e => set("phrase", e.target.value)} placeholder="Lock in and attack the zone." required/></div>
-              <div className="form-group"><label>IPA（発音記号）</label><input className="form-control" value={form.ipa} onChange={e => set("ipa", e.target.value)} placeholder="/lɒk ɪn ænd əˈtæk/"/></div>
-              <div className="form-section-label es">🇪🇸 Español</div>
-              <div className="form-group"><label>スペイン語フレーズ</label><input className="form-control" value={form.phrase_es} onChange={e => set("phrase_es", e.target.value)} placeholder="Concéntrate y ataca la zona."/></div>
-              <div className="form-group"><label>IPA ES（発音記号）</label><input className="form-control" value={form.ipa_es} onChange={e => set("ipa_es", e.target.value)} placeholder="/konˈθentɾate i aˈtaka la ˈθona/"/></div>
-              <div className="form-group"><label>日本語の意味</label><input className="form-control" value={form.meaning} onChange={e => set("meaning", e.target.value)} placeholder="集中してゾーンを攻めろ"/></div>
-              <div className="form-group"><label>カテゴリー（グループ） *</label>
-                <select className="form-control" value={form.category} onChange={e => set("category", e.target.value)} required>
-                  {(categories || []).map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+              <div className="form-group">
+                <label>英語フレーズ *</label>
+                <input className="form-control" value={form.phrase} onChange={e => set("phrase", e.target.value)} placeholder="e.g. Where does it hurt?" required />
+              </div>
+              <div className="form-group">
+                <label>発音記号（IPA）</label>
+                <input className="form-control" value={form.ipa} onChange={e => set("ipa", e.target.value)} placeholder="e.g. /wɛr dʌz ɪt hɜːrt/" style={{fontFamily:"Georgia,serif"}} />
+              </div>
+              <div className="form-group">
+                <label>読み方（カタカナ）</label>
+                <input className="form-control" value={form.reading} onChange={e => set("reading", e.target.value)} placeholder="e.g. ウェア ダズ イット ハート？" />
+              </div>
+
+              {/* 🇪🇸 Español */}
+              {HAS_ES && (
+                <>
+                  <div className="form-section-label es">🇪🇸 Español</div>
+                  <div className="form-group">
+                    <label>スペイン語フレーズ</label>
+                    <input className="form-control" value={form.phrase_es||""} onChange={e => set("phrase_es", e.target.value)} placeholder="e.g. ¿Dónde le duele?" />
+                  </div>
+                  <div className="form-group">
+                    <label>スペイン語 IPA</label>
+                    <input className="form-control" value={form.ipa_es||""} onChange={e => set("ipa_es", e.target.value)} placeholder="e.g. /ˈdonde le ˈdwele/" style={{fontFamily:"Georgia,serif"}} />
+                  </div>
+                </>
+              )}
+
+              {/* 共通フィールド */}
+              <div className="form-section-label en" style={{marginTop:16}}>🇯🇵 共通情報</div>
+              <div className="form-group">
+                <label>意味・日本語訳</label>
+                <input className="form-control" value={form.meaning} onChange={e => set("meaning", e.target.value)} placeholder="e.g. どこが痛みますか？" />
+              </div>
+              <div className="form-group">
+                <label>グループ</label>
+                <select className="form-control" value={form.category} onChange={e => set("category", e.target.value)}>
+                  {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
-              <div className="form-group"><label>例文</label><textarea className="form-control" value={form.example} onChange={e => set("example", e.target.value)} placeholder="Two strikes — lock in and attack the zone early." rows={2}/></div>
-              <div className="form-group"><label>タグ（カンマ区切り）</label><input className="form-control" value={form.tags} onChange={e => set("tags", e.target.value)} placeholder="pitching, count, focus"/></div>
+              <div className="form-group">
+                <label>例文</label>
+                <textarea className="form-control" value={form.example} onChange={e => set("example", e.target.value)} placeholder="使用例（任意）" />
+              </div>
+              <div className="form-group">
+                <label>タグ（カンマ区切り）</label>
+                <input className="form-control" value={typeof form.tags==="string" ? form.tags : form.tags.join(", ")} onChange={e => set("tags", e.target.value)} placeholder="e.g. pain, assessment" />
+              </div>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn-cancel" onClick={onClose}>キャンセル</button>
@@ -1121,445 +1327,237 @@ Japanese input: "${jaText}"`;
     );
   }
 
-  /* ── Detail Modal ── */
-  function DetailModal({ phrase, onClose, onEdit, onDelete, speakingId, speak }) {
-    if (!phrase) return null;
+  /* ════════════════════════════════
+     詳細モーダル
+  ════════════════════════════════ */
+  function DetailModal({ phrase, onClose, onEdit, onDelete, speakingId, speak, categories }) {
     const sid = `detail-${phrase.id}`;
+    const cat = categories.find(c => c.key === phrase.category);
+    const col = palColor(cat?.paletteIdx ?? 0);
     return (
       <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="modal">
-          <div className="modal-header">
-            <h2>⚾ フレーズ詳細</h2>
-            <button className="modal-close" onClick={onClose}>✕</button>
-          </div>
+          <div className="modal-header"><h2>フレーズ詳細</h2><button className="modal-close" onClick={onClose}>✕</button></div>
           <div className="modal-body">
-            {phrase.phrase && (
+            <span className="card-badge" style={{background:col.bg,color:col.text,marginBottom:10,display:"inline-block"}}>{cat?.label || phrase.category}</span>
+
+            {/* 🇺🇸 English */}
+            {HAS_EN && (
               <div style={{marginBottom:14}}>
+                <p className="detail-label" style={{color:"#1e3460"}}>🇺🇸 English</p>
                 <p className="detail-phrase">{phrase.phrase}</p>
                 {phrase.ipa     && <p className="detail-ipa">{phrase.ipa}</p>}
                 {phrase.reading && <p className="detail-reading">{phrase.reading}</p>}
                 <div className="detail-speak-row">
                   <button className={`detail-speak-btn${speakingId===sid?" speaking":""}`} onClick={() => speak(phrase.phrase, sid, "en-US")}>
-                    <SpeakerIcon speaking={speakingId===sid}/> English
+                    <SpeakerIcon size={15} speaking={speakingId===sid}/>
+                    {speakingId===sid ? "再生中..." : "🇺🇸 読み上げ"}
                   </button>
                 </div>
               </div>
             )}
-            {phrase.phrase_es && (
-              <div className="detail-es-block">
+
+            {/* 🇪🇸 Español */}
+            {HAS_ES && phrase.phrase_es && (
+              <div className="detail-es-block" style={{marginBottom:14}}>
+                <p className="detail-label" style={{color:"var(--es-accent)"}}>🇪🇸 Español</p>
                 <p className="detail-es-phrase">{phrase.phrase_es}</p>
                 {phrase.ipa_es && <p className="detail-es-ipa">{phrase.ipa_es}</p>}
-                <button className={`detail-speak-btn es-btn${speakingId===sid+"-es"?" speaking":""}`} onClick={() => speak(phrase.phrase_es, sid+"-es", "es-ES")}>
-                  <SpeakerIcon speaking={speakingId===sid+"-es"}/> Español
-                </button>
+                <div className="detail-speak-row" style={{marginBottom:0,marginTop:8}}>
+                  <button className={`detail-speak-btn es-btn${speakingId===`${sid}-es`?" speaking":""}`}
+                    onClick={() => speak(phrase.phrase_es, `${sid}-es`, "es-ES")}>
+                    <SpeakerIcon size={15} speaking={speakingId===`${sid}-es`}/>
+                    {speakingId===`${sid}-es` ? "再生中..." : "🇪🇸 読み上げ"}
+                  </button>
+                </div>
               </div>
             )}
-            <div className="detail-section"><div className="detail-label">意味</div><div className="detail-value">{phrase.meaning}</div></div>
-            {phrase.example && <div className="detail-section"><div className="detail-label">Example</div><div className="detail-value detail-example">{phrase.example}</div></div>}
-            {phrase.tags?.length > 0 && <div className="detail-section"><div className="detail-label">Tags</div><div className="card-tags">{phrase.tags.map(t => <span key={t} className="tag">{t}</span>)}</div></div>}
-            {phrase.words?.length > 0 && (
+
+            {phrase.meaning && <div className="detail-section"><p className="detail-label">日本語訳</p><p className="detail-value">{phrase.meaning}</p></div>}
+            {phrase.example && <div className="detail-section"><p className="detail-label">例文</p><p className="detail-example">"{phrase.example}"</p></div>}
+            {/* 🇺🇸 英語 単語解説 — データがあれば表示、空なら「取得中」 */}
+            {HAS_EN && phrase.phrase && (
               <div className="detail-section">
-                <div className="detail-label">🇺🇸 English Words</div>
-                <table className="word-table"><tbody>{phrase.words.map((w,i)=>(
-                  <tr key={i}>
-                    <td><span className="wt-word">{w.w}</span>{w.r && <span className="wt-read">{w.r}</span>}</td>
-                    <td className="wt-ja">{w.m}</td>
-                    <td>{w.note && <span className="wt-note">{w.note}</span>}</td>
-                    <td><button className={`wt-speak${speakingId===`dw-${phrase.id}-${i}`?" speaking":""}`} onClick={() => speak(w.w, `dw-${phrase.id}-${i}`, "en-US")}><SpeakerIcon size={13}/></button></td>
-                  </tr>
-                ))}</tbody></table>
+                <p className="detail-label">🇺🇸 英語 — 単語・フレーズ解説</p>
+                {(phrase.words||[]).length === 0 ? (
+                  <p style={{fontSize:".8rem",color:"var(--gray-400)",fontStyle:"italic",display:"flex",alignItems:"center",gap:6}}>
+                    <span className="spinner-sm"/>単語解説を取得中...
+                  </p>
+                ) : (
+                  <table className="word-table">
+                    <thead><tr><th>単語</th><th>意味</th><th>品詞メモ</th><th></th></tr></thead>
+                    <tbody>
+                      {phrase.words.map((w, i) => {
+                        const wid = `wt-${phrase.id}-${i}`;
+                        return (
+                          <tr key={i}>
+                            <td><span className="wt-word">{w.w}</span>{w.r && <span className="wt-read">{w.r}</span>}</td>
+                            <td><span className="wt-ja">{w.m}</span></td>
+                            <td>{w.note && <span className="wt-note">{w.note}</span>}</td>
+                            <td><button className={`wt-speak${speakingId===wid?" speaking":""}`} onClick={() => speak(w.w, wid, "en-US")}><SpeakerIcon size={13} speaking={speakingId===wid}/></button></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             )}
-            {phrase.words_es?.length > 0 && (
+            {/* 🇪🇸 スペイン語 単語解説 — データがあれば表示、空なら「取得中」 */}
+            {HAS_ES && phrase.phrase_es && (
               <div className="detail-section">
-                <div className="detail-label">🇪🇸 Spanish Words</div>
-                <table className="word-table"><tbody>{phrase.words_es.map((w,i)=>(
-                  <tr key={i}>
-                    <td><span className="wt-word wt-word-es">{w.w}</span>{w.r && <span className="wt-read">{w.r}</span>}</td>
-                    <td className="wt-ja">{w.m}</td>
-                    <td>{w.note && <span className="wt-note">{w.note}</span>}</td>
-                    <td><button className={`wt-speak wt-speak-es${speakingId===`dwe-${phrase.id}-${i}`?" speaking":""}`} onClick={() => speak(w.w, `dwe-${phrase.id}-${i}`, "es-ES")}><SpeakerIcon size={13}/></button></td>
-                  </tr>
-                ))}</tbody></table>
+                <p className="detail-label" style={{color:"var(--es-accent)"}}>🇪🇸 Español — 単語・フレーズ解説</p>
+                {(phrase.words_es||[]).length === 0 ? (
+                  <p style={{fontSize:".8rem",color:"var(--gray-400)",fontStyle:"italic",display:"flex",alignItems:"center",gap:6}}>
+                    <span className="spinner-sm"/>単語解説を取得中...
+                  </p>
+                ) : (
+                  <table className="word-table">
+                    <thead><tr><th>単語</th><th>日本語訳</th><th>品詞メモ</th><th></th></tr></thead>
+                    <tbody>
+                      {phrase.words_es.map((w, i) => {
+                        const wid = `wt-es-${phrase.id}-${i}`;
+                        return (
+                          <tr key={i}>
+                            <td>
+                              <span className="wt-word wt-word-es">{w.w}</span>
+                              {w.r && <span className="wt-read">{w.r}</span>}
+                            </td>
+                            <td><span className="wt-ja">{w.m}</span></td>
+                            <td>{w.note && <span className="wt-note" style={{background:"#ffe8e8",color:"#8b1a1a"}}>{w.note}</span>}</td>
+                            <td>
+                              <button className={`wt-speak wt-speak-es${speakingId===wid?" speaking":""}`}
+                                onClick={() => speak(w.w, wid, "es-ES")}>
+                                <SpeakerIcon size={13} speaking={speakingId===wid}/>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
+            )}
+            {(phrase.tags||[]).length > 0 && (
+              <div className="detail-section"><p className="detail-label">タグ</p><div className="card-tags" style={{marginTop:4}}>{phrase.tags.map(t=><span key={t} className="tag">{t}</span>)}</div></div>
             )}
           </div>
           <div className="modal-footer">
-            <button className="btn-cancel" onClick={() => onDelete(phrase.id)}>削除</button>
-            <button className="btn-save" onClick={() => onEdit(phrase)}>編集</button>
+            <button className="btn-cancel" style={{color:"#c8102e",borderColor:"#f5b8c0"}} onClick={() => { onDelete(phrase.id); onClose(); }}>削除</button>
+            <button className="btn-cancel" onClick={onClose}>閉じる</button>
+            <button className="btn-save" onClick={() => { onClose(); onEdit(phrase); }}>編集</button>
           </div>
         </div>
       </div>
     );
   }
 
-  /* ── Category Modal ── */
-  function CategoryModal({ onSave, onClose }) {
-    const [label, setLabel] = useState("");
-    const [paletteIdx, setPaletteIdx] = useState(0);
-    const submit = (e) => {
-      e.preventDefault();
-      const name = label.trim();
-      if (!name) return;
-      const key = "cat-" + Date.now();
-      onSave({ key, label:name, paletteIdx, builtIn:false });
-    };
-    return (
-      <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-        <div className="modal modal-sm">
-          <div className="modal-header">
-            <h2>＋ グループ追加</h2>
-            <button className="modal-close" onClick={onClose}>✕</button>
-          </div>
-          <form onSubmit={submit}>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>グループ名</label>
-                <input className="form-control" value={label} onChange={e => setLabel(e.target.value)} placeholder="例：遠征・移動" required/>
-              </div>
-              <div className="form-group">
-                <label>カラー</label>
-                <div className="color-swatch-row">
-                  {PALETTE.map((p,i)=>(
-                    <div key={i} className={`color-swatch${paletteIdx===i?" selected":""}`} style={{background:p.text}} onClick={() => setPaletteIdx(i)}></div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn-cancel" onClick={onClose}>キャンセル</button>
-              <button type="submit" className="btn-save">追加</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
+  /* ════════════════════════════════
+     App
+  ════════════════════════════════ */
   function App() {
     const [phrases, setPhrases] = useState(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.phrases) || localStorage.getItem("clubhouse_phrases");
-        if (!saved) return INITIAL_PHRASES;
-        const parsed = JSON.parse(saved);
-        const legacyIdMap = {
-          "1":"00000000-bb01-0000-0000-000000000001",
-          "2":"00000000-bb02-0000-0000-000000000002",
-          "3":"00000000-bb03-0000-0000-000000000003",
-          "4":"00000000-bb04-0000-0000-000000000004",
-          "5":"00000000-bb05-0000-0000-000000000005",
-          "6":"00000000-bb06-0000-0000-000000000006",
-          "7":"00000000-bb07-0000-0000-000000000007",
-          "8":"00000000-bb08-0000-0000-000000000008",
-        };
-        return parsed.map(p => {
-          const k = String(p.id);
-          return (/^\d+$/.test(k) && legacyIdMap[k]) ? { ...p, id: legacyIdMap[k] } : p;
-        });
-      } catch { return INITIAL_PHRASES; }
+      try { const s = localStorage.getItem(APP_ID + "-phrases"); return s ? JSON.parse(s) : INITIAL_PHRASES; } catch { return INITIAL_PHRASES; }
     });
-    const [customCats, setCustomCats] = useState(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.customCats) || localStorage.getItem("clubhouse_custom_cats");
-        return saved ? JSON.parse(saved) : [];
-      } catch { return []; }
+    const [categories, setCategories] = useState(() => {
+      try { const s = localStorage.getItem(APP_ID + "-categories"); return s ? JSON.parse(s) : DEFAULT_CATEGORIES; } catch { return DEFAULT_CATEGORIES; }
     });
-    const [activeCat, setActiveCat] = useState("all");
-    const [search, setSearch] = useState("");
-    const [showAdd, setShowAdd] = useState(false);
-    const [editTarget, setEditTarget] = useState(null);
-    const [detailTarget, setDetail] = useState(null);
-    const [showCat, setShowCat] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-    const [addPreset, setAddPreset] = useState(null);
-    const [openWords, setOpenWords] = useState({});
-    const [offline, setOffline] = useState(!navigator.onLine);
-    const [syncStatus, setSyncStatus] = useState(db.ready ? "Supabase接続中" : "ローカル保存");
-    const { speakingId, speak, voiceName, voiceNameEs } = useSpeech();
 
-    const categories = useMemo(() => [...DEFAULT_CATEGORIES, ...customCats], [customCats]);
-    const catMap = useMemo(() => Object.fromEntries(categories.map(c => [c.key, c])), [categories]);
+    useEffect(() => { localStorage.setItem(APP_ID + "-phrases",    JSON.stringify(phrases));    }, [phrases]);
+    useEffect(() => { localStorage.setItem(APP_ID + "-categories", JSON.stringify(categories)); }, [categories]);
 
+    /* ══════════════════════════════════════════════════════════
+       Supabase 起動時同期（完全修正版）
+       ─────────────────────────────────────────────────────────
+       【設計方針】
+       ① localStorage を「一次キャッシュ」として必ず読む
+       ② Supabase を「正規データストア」として扱う
+       ③ マージ戦略：Supabase にあるものは Supabase を優先し、
+          ローカルにしか存在しない ID のフレーズは温存し
+          Supabase へ push して永続化する
+          → データが「消える」現象を根絶する
+       ④ カテゴリも同様にマージ（上書きしない）
+    ══════════════════════════════════════════════════════════ */
+    const [syncStatus, setSyncStatus] = useState(db.ready ? "syncing" : "local");
     useEffect(() => {
-      const goOnline  = () => setOffline(false);
-      const goOffline = () => setOffline(true);
-      window.addEventListener("online", goOnline);
-      window.addEventListener("offline", goOffline);
-      return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
-    }, []);
-
-    useEffect(() => {
-      let cancelled = false;
       if (!db.ready) return;
-      (async () => {
-        setSyncStatus("Supabase同期中...");
-        try {
-          const res = await db.loadAll();
-          if (cancelled || !res) return;
+      db.loadAll().then(result => {
+        if (!result) { setSyncStatus("error"); return; }
+        const { phrases: sbPhrases, customCats } = result;
 
-          setPhrases(prev => {
-            const merged = new Map();
-            for (const p of INITIAL_PHRASES) merged.set(String(p.id), p);
-            for (const p of prev || []) merged.set(String(p.id), p);
-            for (const p of res.phrases || []) merged.set(String(p.id), p);
-            const arr = [...merged.values()];
-            localStorage.setItem(STORAGE_KEYS.phrases, JSON.stringify(arr));
-            return arr;
-          });
+        /* ── ローカルの現在データを取得（同期の比較用）── */
+        const localPhrases = (() => {
+          try { return JSON.parse(localStorage.getItem(APP_ID + "-phrases") || "[]"); } catch { return []; }
+        })();
 
-          setCustomCats(prev => {
-            const merged = new Map();
-            for (const c of prev || []) merged.set(String(c.key), c);
-            for (const c of res.customCats || []) merged.set(String(c.key), c);
-            const arr = [...merged.values()];
-            localStorage.setItem(STORAGE_KEYS.customCats, JSON.stringify(arr));
-            return arr;
-          });
+        if (sbPhrases.length === 0) {
+          /* Supabase が空 → ローカルを全件 push（初回起動 or リセット後）
+             UI はすでに localStorage で初期化済みなので setPhrases は不要 */
+          if (localPhrases.length > 0) {
+            localPhrases.forEach(p => db.upsertPhrase(p));
+          }
+        } else {
+          /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+             Supabase に既存データあり → マージ
+             ・Supabase 側のレコードを正として採用
+             ・ローカルにしか存在しない ID のフレーズは温存し
+               Supabase へ push して永続化する
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+          const sbIds = new Set(sbPhrases.map(p => String(p.id)));
+          const localOnlyPhrases = localPhrases.filter(p => !sbIds.has(String(p.id)));
 
-          setSyncStatus("Supabase同期済み");
-        } catch (e) {
-          console.warn("[Supabase] loadAll:", e);
-          setSyncStatus("ローカル保存");
+          /* ローカル専用フレーズを Supabase へ push */
+          if (localOnlyPhrases.length > 0) {
+            localOnlyPhrases.forEach(p => db.upsertPhrase(p));
+          }
+
+          /* マージ済みリストで state を更新 */
+          const merged = [...sbPhrases, ...localOnlyPhrases];
+          setPhrases(merged);
+
+          /* ── words / words_es / ipa_es が空のフレーズをバックグラウンドで自動補完 ──
+             Supabase に古いデータが残っている場合に対応（1件ずつ処理）。
+             ipa_es は supabase_migration_v2 追加時に DEFAULT '' で埋まるため
+             既存レコードでも空になっていることがある。                       */
+          const needsRegen = sbPhrases.filter(p =>
+            (p.phrase    && (p.words    || []).length === 0) ||
+            (p.phrase_es && (p.words_es || []).length === 0) ||
+            (p.phrase_es && !p.ipa_es)   // ← ipa_es が空のレコードも対象
+          );
+          if (needsRegen.length > 0) {
+            (async () => {
+              for (const p of needsRegen) {
+                try {
+                  const needsWords   = (p.words    || []).length === 0 && !!p.phrase;
+                  const needsWordsEs = (p.words_es || []).length === 0 && !!p.phrase_es;
+                  const needsIpaEs   = !p.ipa_es && !!p.phrase_es;
+
+                  const [newWords, newWordsEs, newIpaEs] = await Promise.all([
+                    needsWords   ? fetchEnWords(p.phrase)    : Promise.resolve(p.words    || []),
+                    needsWordsEs ? fetchEsWords(p.phrase_es) : Promise.resolve(p.words_es || []),
+                    /* ipa_es: fetchEsIpa は必ず非空を返す（フォールバック付き） */
+                    needsIpaEs   ? fetchEsIpa(p.phrase_es)   : Promise.resolve(p.ipa_es   || ""),
+                  ]);
+
+                  const upd = { ...p, words: newWords, words_es: newWordsEs, ipa_es: newIpaEs };
+                  setPhrases(ps => ps.map(x => x.id === upd.id ? upd : x));
+                  await db.upsertPhrase(upd);
+                } catch { /* 1件失敗しても次へ続行 */ }
+              }
+            })();
+          }
         }
-      })();
-      return () => { cancelled = true; };
-    }, []);
 
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.phrases, JSON.stringify(phrases)); }, [phrases]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.customCats, JSON.stringify(customCats)); }, [customCats]);
-
-    const filtered = useMemo(() => {
-      const q = search.trim().toLowerCase();
-      return phrases.filter(p => {
-        const catOk = activeCat === "all" || p.category === activeCat;
-        const hay = [p.phrase, p.phrase_es, p.reading, p.meaning, p.example, ...(p.tags||[])].join(" ").toLowerCase();
-        return catOk && (!q || hay.includes(q));
-      });
-    }, [phrases, activeCat, search]);
-
-    const savePhrase = async (form) => {
-      const normalized = {
-        ...form,
-        id: form.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
-        category: form.category || categories[0]?.key || "pitching",
-        tags: typeof form.tags === "string" ? form.tags.split(",").map(s=>s.trim()).filter(Boolean) : (form.tags || []),
-        words: form.words || [],
-        words_es: form.words_es || [],
-      };
-
-      setPhrases(prev => {
-        const exists = prev.some(p => p.id === normalized.id);
-        return exists ? prev.map(p => p.id === normalized.id ? normalized : p) : [normalized, ...prev];
-      });
-      setShowAdd(false); setEditTarget(null); setDetail(null); setAddPreset(null);
-
-      const result = await db.upsertPhrase(normalized);
-      if (result?.ok) setSyncStatus("Supabase保存済み");
-      else setSyncStatus("ローカル保存中");
-    };
-
-    const deletePhrase = async (id) => {
-      setPhrases(prev => prev.filter(p => p.id !== id));
-      const result = await db.deletePhrase(id);
-      if (result?.ok) setSyncStatus("Supabase削除済み");
-      else setSyncStatus("ローカル保存中");
-    };
-
-    const toggleStar = async (p, e) => {
-      e.stopPropagation();
-      const next = { ...p, starred: !p.starred };
-      setPhrases(prev => prev.map(x => x.id === p.id ? next : x));
-      const result = await db.upsertPhrase(next);
-      if (result?.ok) setSyncStatus("Supabase保存済み");
-      else setSyncStatus("ローカル保存中");
-    };
-
-    const addCategory = async (c) => {
-      setCustomCats(prev => [...prev, c]);
-      setShowCat(false);
-      const result = await db.upsertCategory(c);
-      if (result?.ok) setSyncStatus("Supabase保存済み");
-      else setSyncStatus("ローカル保存中");
-    };
-
-    const delCategory = async (key, e) => {
-      e.stopPropagation();
-      if (!confirm("このグループを削除しますか？フレーズは「クラブハウス」に移動します。")) return;
-      setCustomCats(prev => prev.filter(c => c.key !== key));
-      const updated = phrases.map(p => p.category === key ? { ...p, category:"clubhouse" } : p);
-      setPhrases(updated);
-      if (activeCat === key) setActiveCat("all");
-      const result = await db.deleteCategory(key);
-      for (const p of updated.filter(p => p.category === "clubhouse")) await db.upsertPhrase(p);
-      if (result?.ok) setSyncStatus("Supabase削除済み");
-      else setSyncStatus("ローカル保存中");
-    };
-
-    const handleTranslateSave = ({ ja, en, ipa, words, es, ipa_es, words_es }) => {
-      setAddPreset({
-        phrase: en, ipa, reading:"", meaning: ja,
-        phrase_es: es || "", ipa_es: ipa_es || "", words_es: words_es || [],
-        category: activeCat !== "all" ? activeCat : "clubhouse",
-        example:"", tags:["translated"], starred:false, words
-      });
-      setShowAdd(true);
-    };
-
-    const toggleWords = (id, e) => {
-      e.stopPropagation();
-      setOpenWords(o => ({ ...o, [id]: !o[id] }));
-    };
-
-    const apiMode = !!(localStorage.getItem("openai_api_key") || "").trim();
-
-    return (
-      <>
-        {offline && <div className="offline-banner">オフラインです。保存は端末内に保持され、オンライン復帰後に再読込でSupabase同期されます。</div>}
-        <header className="header">
-          <div className="header-inner">
-            <div className="header-top">
-              <div className="header-icon">⚾</div>
-              <div style={{flex:1}}>
-                <h1>Clubhouse Phrase Book <span className="cc-badge">CITY CONNECT</span></h1>
-              </div>
-              <button className="settings-btn" onClick={() => setShowSettings(true)} title="API設定">⚙️</button>
-            </div>
-            <div className="header-sub">MLB dugout English + Latin clubhouse Spanish</div>
-            <div className="voice-indicator">
-              🔊 EN: {voiceName || "Loading..."} / ES: {voiceNameEs || "Device default"}
-              <span className={`api-mode-badge ${apiMode ? "openai" : "fallback"}`}>{apiMode ? "GPT-4o-mini" : "Fallback API"}</span>
-              <span className="api-mode-badge fallback">{syncStatus}</span>
-            </div>
-          </div>
-        </header>
-
-        <main className="main">
-          <TranslatePanel onSaveRequest={handleTranslateSave} speakingId={speakingId} speak={speak}/>
-
-          <div className="toolbar">
-            <div className="search-wrap">
-              <span className="search-icon">🔍</span>
-              <input className="search-input" value={search} onChange={e => setSearch(e.target.value)} placeholder="フレーズ・意味・タグを検索"/>
-            </div>
-            <button className="add-btn" onClick={() => { setAddPreset(null); setShowAdd(true); }}>＋ フレーズ追加</button>
-          </div>
-
-          <div className="filter-row">
-            <button className={`filter-btn${activeCat==="all"?" active":""}`} onClick={() => setActiveCat("all")}>ALL <span>{phrases.length}</span></button>
-            {categories.map(c => {
-              const p = palColor(c.paletteIdx);
-              const count = phrases.filter(x => x.category === c.key).length;
-              return (
-                <button key={c.key} className={`filter-btn${activeCat===c.key?" active":""}`} onClick={() => setActiveCat(c.key)}
-                  style={activeCat===c.key ? {background:p.text,borderColor:p.text,color:"#000"} : {}}>
-                  {c.label} <span>{count}</span>
-                  {!c.builtIn && <span className="del-cat" onClick={(e)=>delCategory(c.key,e)}>✕</span>}
-                </button>
-              );
-            })}
-            <button className="add-cat-btn" onClick={() => setShowCat(true)}>＋ グループ</button>
-          </div>
-
-          <div className="stats">{filtered.length} phrases shown</div>
-
-          {filtered.length === 0 ? (
-            <div className="empty"><div className="empty-icon">⚾</div><p>該当するフレーズがありません</p></div>
-          ) : (
-            <div className="card-grid">
-              {filtered.map(p => {
-                const cat = catMap[p.category] || categories[0];
-                const col = palColor(cat?.paletteIdx || 0);
-                const wordsOpen = !!openWords[p.id];
-                const sidEn = `card-${p.id}-en`;
-                const sidEs = `card-${p.id}-es`;
-                return (
-                  <div key={p.id} className="card" style={{borderTopColor:col.border}} onClick={() => setDetail(p)}>
-                    <div className="card-actions">
-                      <button className="icon-btn" onClick={(e)=>toggleStar(p,e)} title="スター">{p.starred ? "★" : "☆"}</button>
-                      <button className="icon-btn" onClick={(e)=>{e.stopPropagation(); setEditTarget(p);}} title="編集">✏️</button>
-                      <button className="icon-btn delete" onClick={(e)=>{e.stopPropagation(); deletePhrase(p.id);}} title="削除">🗑</button>
-                    </div>
-                    <span className="card-badge" style={{background:col.bg,color:col.text}}>{cat?.label}</span>
-                    <div className="card-phrase">{p.phrase}</div>
-                    {p.ipa && <div className="card-ipa">{p.ipa}</div>}
-                    {p.reading && <div className="card-reading">{p.reading}</div>}
-                    {p.phrase_es && (
-                      <div className="card-es-block">
-                        <div className="card-phrase-es">{p.phrase_es}</div>
-                        {p.ipa_es && <div className="card-ipa-es">{p.ipa_es}</div>}
-                      </div>
-                    )}
-                    <div className="card-meaning">{p.meaning}</div>
-                    {p.tags?.length > 0 && <div className="card-tags">{p.tags.map(t => <span key={t} className="tag">{t}</span>)}</div>}
-                    {wordsOpen && (
-                      <>
-                        {p.words?.length > 0 && <>
-                          <div className="word-breakdown-label en">🇺🇸 English Words</div>
-                          <WordBreakdown words={p.words} speakingId={speakingId} speak={speak} phraseId={`${p.id}-en`} lang="en-US"/>
-                        </>}
-                        {p.words_es?.length > 0 && <>
-                          <div className="word-breakdown-label es">🇪🇸 Spanish Words</div>
-                          <WordBreakdown words={p.words_es} speakingId={speakingId} speak={speak} phraseId={`${p.id}-es`} lang="es-ES"/>
-                        </>}
-                      </>
-                    )}
-                    <div className="card-footer">
-                      <div className="card-speak-group">
-                        <button className={`speak-btn${speakingId===sidEn?" speaking":""}`} onClick={e => {e.stopPropagation(); speak(p.phrase, sidEn, "en-US");}}>
-                          <SpeakerIcon speaking={speakingId===sidEn}/> EN
-                        </button>
-                        {p.phrase_es && (
-                          <button className={`speak-btn es${speakingId===sidEs?" speaking":""}`} onClick={e => {e.stopPropagation(); speak(p.phrase_es, sidEs, "es-ES");}}>
-                            <SpeakerIcon speaking={speakingId===sidEs}/> 🇪🇸
-                          </button>
-                        )}
-                      </div>
-                      <button className={`word-toggle-btn${wordsOpen?" open":""}`} onClick={e => toggleWords(p.id, e)}>
-                        {wordsOpen ? "▲" : "▼"} 単語
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </main>
-
-        {showAdd && (
-          <PhraseModal
-            phrase={addPreset || editTarget || null}
-            onSave={savePhrase}
-            onClose={() => { setShowAdd(false); setAddPreset(null); setEditTarget(null); }}
-            categories={categories}
-          />
-        )}
-        {editTarget && !showAdd && (
-          <PhraseModal phrase={editTarget} onSave={savePhrase} onClose={() => setEditTarget(null)} categories={categories}/>
-        )}
-        {detailTarget && !showAdd && !editTarget && (
-          <DetailModal
-            phrase={detailTarget}
-            onClose={() => setDetail(null)}
-            onEdit={p => { setDetail(null); setEditTarget(p); }}
-            onDelete={id => { deletePhrase(id); setDetail(null); }}
-            speakingId={speakingId}
-            speak={speak}
-          />
-        )}
-        {showCat && <CategoryModal onSave={addCategory} onClose={() => setShowCat(false)}/>}
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)}/>}
-      </>
-    );
-  }
-
-  const root = ReactDOM.createRoot(document.getElementById("root"));
-  root.render(<ErrorBoundary><App/></ErrorBoundary>);
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(() => {});
-    });
-  }
-</script>
-</body>
-</html>
+        /* ── カテゴリ同期（マージ。Supabase にないローカル分も保持）──
+           従来の「setCategories で丸ごと置き換え」をやめ、
+           ・builtIn カテゴリは常に保持
+           ・Supabase カスタムカテゴリと、ローカルにしかないカスタムカテゴリを合成
+           これにより "カテゴリがリロードで消える" バグを修正する。       */
+        setCategories(prev => {
+          const builtins       = prev.filter(c => c.builtIn);
+          const existingCustom = prev.filter(c => !c.builtIn);
+          if (customCats.length === 0) {
+            /* Supabase にカスタムカテゴリなし → ローカルのまま維持 */
+            return prev;
+          }
