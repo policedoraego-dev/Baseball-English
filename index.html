@@ -405,10 +405,25 @@
   const APP_CONFIG = {
     appName:     "Clubhouse Phrase Book",
     edition:     "City Connect",
+    appId:       "clubhouse_phrase_book_city_connect_v1",
     langs:       ["en", "es"],
     primaryLang: "en",
     inputLang:   "ja",
   };
+
+  const STORAGE_KEYS = {
+    phrases:    `${APP_CONFIG.appId}:phrases`,
+    categories: `${APP_CONFIG.appId}:categories`,
+  };
+
+  function readJsonStorage(key, fallback, legacyKey = "") {
+    try {
+      const raw = localStorage.getItem(key) ?? (legacyKey ? localStorage.getItem(legacyKey) : null);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
   const HAS_EN = true;
   const HAS_ES = true;
 
@@ -422,29 +437,66 @@
 
   const db = {
     ready: !!sb,
-    _fromRow: (r) => ({ ...r, tags: r.tags || [], words: r.words || [], phrase_es: r.phrase_es || "", ipa_es: r.ipa_es || "", words_es: r.words_es || [] }),
+    phraseTable: "phrases_baseball",
+    categoryTable: "categories",
+    scope: APP_CONFIG.appId,
+
+    _fromRow: (r) => ({
+      ...r,
+      tags: r.tags || [],
+      words: r.words || [],
+      phrase_es: r.phrase_es || "",
+      ipa_es: r.ipa_es || "",
+      words_es: r.words_es || [],
+    }),
+
     _toRow: (p) => ({
-      id: p.id, phrase: p.phrase, ipa: p.ipa || "", reading: p.reading || "",
-      meaning: p.meaning || "", category: p.category, example: p.example || "",
+      app_id: APP_CONFIG.appId,
+      id: p.id,
+      phrase: p.phrase,
+      ipa: p.ipa || "",
+      reading: p.reading || "",
+      meaning: p.meaning || "",
+      category: p.category,
+      example: p.example || "",
       tags: Array.isArray(p.tags) ? p.tags : [],
-      starred: !!p.starred, words: p.words || [],
-      phrase_es: p.phrase_es || "", ipa_es: p.ipa_es || "",
+      starred: !!p.starred,
+      words: p.words || [],
+      phrase_es: p.phrase_es || "",
+      ipa_es: p.ipa_es || "",
       words_es: p.words_es || [],
     }),
+
+    _toCategoryRow: (c) => ({
+      app_id: APP_CONFIG.appId,
+      key: c.key,
+      label: c.label,
+      palette_idx: c.paletteIdx,
+      built_in: false,
+      sort_order: 100,
+    }),
+
     async loadAll() {
       if (!sb) return null;
+
       const [pr, ca] = await Promise.all([
-        sb.from("phrases_baseball").select("*").order("created_at"),
-        sb.from("categories").select("*").order("sort_order").eq("built_in", false),
+        sb.from(this.phraseTable).select("*").eq("app_id", this.scope).order("created_at", { ascending: true }),
+        sb.from(this.categoryTable).select("*").eq("app_id", this.scope).eq("built_in", false).order("sort_order", { ascending: true }),
       ]);
+
+      if (pr.error) throw pr.error;
+      if (ca.error) throw ca.error;
+
       return {
         phrases:    (pr.data || []).map(this._fromRow),
         customCats: (ca.data || []).map(r => ({ key: r.key, label: r.label, paletteIdx: r.palette_idx, builtIn: false })),
       };
     },
+
     async upsertPhrase(p) {
-      if (!sb) return;
+      if (!sb) return { ok: false, error: null };
       const row = this._toRow(p);
+
       if (!row.words || row.words.length === 0) {
         row.words = (row.phrase || "").split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" }));
       }
@@ -453,23 +505,43 @@
       }
       if (!row.ipa && row.phrase)       row.ipa    = "/" + row.phrase + "/";
       if (!row.ipa_es && row.phrase_es) row.ipa_es = "/" + row.phrase_es + "/";
-      const { error } = await sb.from("phrases_baseball").upsert(row);
-      if (error) console.warn("[Supabase] upsertPhrase:", error.message);
+
+      const { error } = await sb.from(this.phraseTable).upsert(row, { onConflict: "id" });
+      if (error) {
+        console.warn("[Supabase] upsertPhrase:", error.message);
+        throw error;
+      }
+      return { ok: true, error: null };
     },
+
     async deletePhrase(id) {
-      if (!sb) return;
-      const { error } = await sb.from("phrases_baseball").delete().eq("id", id);
-      if (error) console.warn("[Supabase] deletePhrase:", error.message);
+      if (!sb) return { ok: false, error: null };
+      const { error } = await sb.from(this.phraseTable).delete().eq("app_id", this.scope).eq("id", id);
+      if (error) {
+        console.warn("[Supabase] deletePhrase:", error.message);
+        throw error;
+      }
+      return { ok: true, error: null };
     },
+
     async upsertCategory(c) {
-      if (!sb) return;
-      const { error } = await sb.from("categories").upsert({ key: c.key, label: c.label, palette_idx: c.paletteIdx, built_in: false, sort_order: 100 });
-      if (error) console.warn("[Supabase] upsertCategory:", error.message);
+      if (!sb) return { ok: false, error: null };
+      const { error } = await sb.from(this.categoryTable).upsert(this._toCategoryRow(c), { onConflict: "app_id,key" });
+      if (error) {
+        console.warn("[Supabase] upsertCategory:", error.message);
+        throw error;
+      }
+      return { ok: true, error: null };
     },
+
     async deleteCategory(key) {
-      if (!sb) return;
-      const { error } = await sb.from("categories").delete().eq("key", key);
-      if (error) console.warn("[Supabase] deleteCategory:", error.message);
+      if (!sb) return { ok: false, error: null };
+      const { error } = await sb.from(this.categoryTable).delete().eq("app_id", this.scope).eq("key", key);
+      if (error) {
+        console.warn("[Supabase] deleteCategory:", error.message);
+        throw error;
+      }
+      return { ok: true, error: null };
     },
   };
 
@@ -1254,60 +1326,89 @@ Japanese input: "${jaText}"`;
 
   /* ── App ── */
   function App() {
-    const [phrases, setPhrases] = useState(() => {
-      try { const s = localStorage.getItem("baseball_app_phrases"); return s ? JSON.parse(s) : INITIAL_PHRASES; } catch { return INITIAL_PHRASES; }
-    });
-    const [categories, setCategories] = useState(() => {
-      try { const s = localStorage.getItem("baseball_app_categories"); return s ? JSON.parse(s) : DEFAULT_CATEGORIES; } catch { return DEFAULT_CATEGORIES; }
-    });
-    useEffect(() => { localStorage.setItem("baseball_app_phrases",    JSON.stringify(phrases));    }, [phrases]);
-    useEffect(() => { localStorage.setItem("baseball_app_categories", JSON.stringify(categories)); }, [categories]);
+    const [phrases, setPhrases] = useState(() =>
+      readJsonStorage(STORAGE_KEYS.phrases, INITIAL_PHRASES, "baseball_app_phrases")
+    );
+    const [categories, setCategories] = useState(() =>
+      readJsonStorage(STORAGE_KEYS.categories, DEFAULT_CATEGORIES, "baseball_app_categories")
+    );
+
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.phrases,    JSON.stringify(phrases));    }, [phrases]);
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.categories, JSON.stringify(categories)); }, [categories]);
 
     const [syncStatus, setSyncStatus] = useState(db.ready ? "syncing" : "local");
+
+    const mergeById = useCallback((localItems, remoteItems) => {
+      const map = new Map();
+      (remoteItems || []).forEach(item => map.set(String(item.id), item));
+      (localItems || []).forEach(item => map.set(String(item.id), item));
+      return [...map.values()];
+    }, []);
+
+    const mergeCategories = useCallback((localItems, remoteItems) => {
+      const builtins = DEFAULT_CATEGORIES;
+      const map = new Map();
+      (localItems || []).filter(c => !c.builtIn).forEach(c => map.set(c.key, c));
+      (remoteItems || []).forEach(c => map.set(c.key, c));
+      return [...builtins, ...map.values()];
+    }, []);
+
     useEffect(() => {
       if (!db.ready) return;
-      db.loadAll().then(result => {
-        if (!result) { setSyncStatus("error"); return; }
-        const { phrases: sbPhrases, customCats } = result;
-        if (sbPhrases.length === 0) {
-          const local = (() => { try { return JSON.parse(localStorage.getItem("baseball_app_phrases")||"[]"); } catch { return []; } })();
-          if (local.length > 0) local.forEach(p => db.upsertPhrase(p));
-        } else {
-          setPhrases(sbPhrases);
-          const needsRegen = sbPhrases.filter(p =>
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const result = await db.loadAll();
+          if (!result || cancelled) { setSyncStatus("error"); return; }
+
+          const localPhrases = readJsonStorage(STORAGE_KEYS.phrases, INITIAL_PHRASES, "baseball_app_phrases");
+          const localCats    = readJsonStorage(STORAGE_KEYS.categories, DEFAULT_CATEGORIES, "baseball_app_categories");
+
+          const mergedPhrases = mergeById(localPhrases, result.phrases);
+          const mergedCats    = mergeCategories(localCats, result.customCats);
+
+          setPhrases(mergedPhrases);
+          setCategories(mergedCats);
+
+          await Promise.allSettled([
+            ...mergedPhrases.map(p => db.upsertPhrase(p)),
+            ...mergedCats.filter(c => !c.builtIn).map(c => db.upsertCategory(c)),
+          ]);
+
+          const needsRegen = mergedPhrases.filter(p =>
             (p.phrase    && (p.words    || []).length === 0) ||
             (p.phrase_es && (p.words_es || []).length === 0) ||
             (p.phrase_es && !p.ipa_es)
           );
+
           if (needsRegen.length > 0) {
-            (async () => {
-              for (const p of needsRegen) {
-                try {
-                  const needsWords   = (p.words    || []).length === 0 && !!p.phrase;
-                  const needsWordsEs = (p.words_es || []).length === 0 && !!p.phrase_es;
-                  const needsIpaEs   = !p.ipa_es && !!p.phrase_es;
-                  const [newWords, newWordsEs, newIpaEs] = await Promise.all([
-                    needsWords   ? fetchEnWords(p.phrase)    : Promise.resolve(p.words    || []),
-                    needsWordsEs ? fetchEsWords(p.phrase_es) : Promise.resolve(p.words_es || []),
-                    needsIpaEs   ? fetchEsIpa(p.phrase_es)   : Promise.resolve(p.ipa_es   || ""),
-                  ]);
-                  const upd = { ...p, words: newWords, words_es: newWordsEs, ipa_es: newIpaEs };
-                  setPhrases(ps => ps.map(x => x.id === upd.id ? upd : x));
-                  await db.upsertPhrase(upd);
-                } catch {}
-              }
-            })();
+            for (const p of needsRegen) {
+              try {
+                const needsWords   = (p.words    || []).length === 0 && !!p.phrase;
+                const needsWordsEs = (p.words_es || []).length === 0 && !!p.phrase_es;
+                const needsIpaEs   = !p.ipa_es && !!p.phrase_es;
+                const [newWords, newWordsEs, newIpaEs] = await Promise.all([
+                  needsWords   ? fetchEnWords(p.phrase)    : Promise.resolve(p.words    || []),
+                  needsWordsEs ? fetchEsWords(p.phrase_es) : Promise.resolve(p.words_es || []),
+                  needsIpaEs   ? fetchEsIpa(p.phrase_es)   : Promise.resolve(p.ipa_es   || ""),
+                ]);
+                const upd = { ...p, words: newWords, words_es: newWordsEs, ipa_es: newIpaEs };
+                setPhrases(ps => ps.map(x => x.id === upd.id ? upd : x));
+                await db.upsertPhrase(upd);
+              } catch {}
+            }
           }
+
+          if (!cancelled) setSyncStatus("ok");
+        } catch (e) {
+          console.warn("[Supabase] loadAll:", e.message || e);
+          if (!cancelled) setSyncStatus("error");
         }
-        if (customCats.length > 0) {
-          setCategories(prev => {
-            const builtins = prev.filter(c => c.builtIn);
-            return [...builtins, ...customCats.filter(c => !builtins.find(b => b.key === c.key))];
-          });
-        }
-        setSyncStatus("ok");
-      }).catch(() => setSyncStatus("error"));
-    }, []);
+      })();
+
+      return () => { cancelled = true; };
+    }, [mergeById, mergeCategories]);
 
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
     useEffect(() => {
@@ -1366,21 +1467,54 @@ Japanese input: "${jaText}"`;
       });
     }, [phrases, query, activeCategory]);
 
-    const savePhrase = (data) => {
+    const savePhrase = async (data) => {
       const tags = Array.isArray(data.tags) ? data.tags : data.tags.split(",").map(t=>t.trim()).filter(Boolean);
       const safeWords = (arr, src) => { if (Array.isArray(arr) && arr.length > 0) return arr; return (src || "").split(/\s+/).filter(Boolean).map(w => ({ w, m: "", r: "", note: "" })); };
       const safeIpa   = (ipa, src)  => { if (ipa && ipa.trim()) return ipa.trim(); return src ? "/" + src + "/" : ""; };
       const normalized = { ...data, tags, ipa: safeIpa(data.ipa, data.phrase), words: safeWords(data.words, data.phrase), phrase_es: data.phrase_es || "", ipa_es: safeIpa(data.ipa_es, data.phrase_es), words_es: safeWords(data.words_es, data.phrase_es) };
-      if (normalized.id) { setPhrases(ps => ps.map(p => p.id === normalized.id ? normalized : p)); db.upsertPhrase(normalized); }
-      else { const newId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()); const newOne = { ...normalized, id: newId, starred: false }; setPhrases(ps => [...ps, newOne]); db.upsertPhrase(newOne); }
+
+      const phraseToSave = normalized.id
+        ? normalized
+        : { ...normalized, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())), starred: false };
+
+      setPhrases(ps => normalized.id ? ps.map(p => p.id === normalized.id ? phraseToSave : p) : [...ps, phraseToSave]);
+
+      try {
+        await db.upsertPhrase(phraseToSave);
+        if (db.ready) setSyncStatus("ok");
+      } catch {
+        if (db.ready) setSyncStatus("error");
+      }
+
       setShowAdd(false); setEditTarget(null); setAddPreset(null);
     };
 
-    const deletePhrase   = (id)    => { setPhrases(ps => ps.filter(p => p.id !== id)); db.deletePhrase(id); };
-    const toggleStar     = (id, e) => { e.stopPropagation(); setPhrases(ps => ps.map(p => { if (p.id !== id) return p; const u = {...p, starred: !p.starred}; db.upsertPhrase(u); return u; })); };
+    const deletePhrase = async (id) => {
+      setPhrases(ps => ps.filter(p => p.id !== id));
+      try { await db.deletePhrase(id); if (db.ready) setSyncStatus("ok"); }
+      catch { if (db.ready) setSyncStatus("error"); }
+    };
+    const toggleStar = (id, e) => {
+      e.stopPropagation();
+      setPhrases(ps => ps.map(p => {
+        if (p.id !== id) return p;
+        const u = {...p, starred: !p.starred};
+        db.upsertPhrase(u).then(() => db.ready && setSyncStatus("ok")).catch(() => db.ready && setSyncStatus("error"));
+        return u;
+      }));
+    };
     const toggleWords    = (id, e) => { e.stopPropagation(); setOpenWords(o => ({...o, [id]:!o[id]})); };
-    const addCategory    = (cat)   => { setCategories(cs => [...cs, cat]); db.upsertCategory(cat); };
-    const deleteCategory = (key)   => { setCategories(cs => cs.filter(c => c.key !== key)); db.deleteCategory(key); if (activeCategory === key) setCategory("all"); };
+    const addCategory = async (cat) => {
+      setCategories(cs => [...cs.filter(c => c.key !== cat.key), cat]);
+      try { await db.upsertCategory(cat); if (db.ready) setSyncStatus("ok"); }
+      catch { if (db.ready) setSyncStatus("error"); }
+    };
+    const deleteCategory = async (key) => {
+      setCategories(cs => cs.filter(c => c.key !== key));
+      try { await db.deleteCategory(key); if (db.ready) setSyncStatus("ok"); }
+      catch { if (db.ready) setSyncStatus("error"); }
+      if (activeCategory === key) setCategory("all");
+    };
 
     const handleSaveRequest = ({ ja, en, ipa, words, es, ipa_es, words_es }) => {
       setAddPreset({ phrase: en, meaning: ja, ipa: ipa || "", reading: "", words: Array.isArray(words) ? words : [], phrase_es: es || "", ipa_es: ipa_es || "", words_es: Array.isArray(words_es) ? words_es : [], category: categories[0]?.key || "pitching", example: "", tags: [], starred: false });
