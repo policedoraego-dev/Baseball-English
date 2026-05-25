@@ -1184,8 +1184,22 @@ Japanese input: "${jaText}"`;
       return { ...blank, ...phrase, tags };
     };
     const [form, setForm] = useState(initForm);
+
+    // カテゴリー一覧はSupabase/localStorageから動的に変わるため、
+    // 現在選択中の値が消えた場合だけ先頭カテゴリーへ安全に補正する。
+    useEffect(() => {
+      const availableKeys = (categories || []).map(c => c.key);
+      if (!availableKeys.length) return;
+      setForm(f => availableKeys.includes(f.category) ? f : { ...f, category: availableKeys[0] });
+    }, [categories]);
+
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-    const submit = (e) => { e.preventDefault(); onSave(form); };
+    const submit = (e) => {
+      e.preventDefault();
+      const availableKeys = (categories || []).map(c => c.key);
+      const safeCategory = availableKeys.includes(form.category) ? form.category : (availableKeys[0] || "pitching");
+      onSave({ ...form, category: safeCategory });
+    };
     return (
       <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="modal">
@@ -1203,8 +1217,8 @@ Japanese input: "${jaText}"`;
               <div className="form-group"><label>IPA ES（発音記号）</label><input className="form-control" value={form.ipa_es} onChange={e => set("ipa_es", e.target.value)} placeholder="/konˈθentɾate i aˈtaka la ˈθona/"/></div>
               <div className="form-group"><label>日本語の意味</label><input className="form-control" value={form.meaning} onChange={e => set("meaning", e.target.value)} placeholder="集中してゾーンを攻めろ"/></div>
               <div className="form-group"><label>カテゴリー</label>
-                <select className="form-control" value={form.category} onChange={e => set("category", e.target.value)}>
-                  {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                <select className="form-control" value={form.category} onChange={e => set("category", e.target.value)} required>
+                  {(categories || []).map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
               <div className="form-group"><label>例文</label><textarea className="form-control" value={form.example} onChange={e => set("example", e.target.value)} placeholder="Two strikes — lock in and attack the zone early." rows={2}/></div>
